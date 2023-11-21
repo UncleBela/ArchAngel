@@ -1,4 +1,5 @@
 #/bin/sh
+device="sda1"
 
-var="/dev/sda1"
-echo $var | sed 's=/dev/=='
+$(lsblk | grep -o "$device" > /dev/null)
+echo $?

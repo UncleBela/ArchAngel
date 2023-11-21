@@ -1,11 +1,20 @@
 #!/bin/sh
 
+# Declaring variables
+devices=()
+isDone=1
+partEnd=1
+
+# Beginning of all functions
+
 YesOrNo ()
 {
     read -p "$1 (y/n): " yn 
-    if [ $yn == "y" ]
+    if [[ "$yn" == [yY] ]]
     then
+	echo -e "Listing devices...\n"
 	$2
+	echo -e
     else
 	continue
     fi
@@ -14,7 +23,7 @@ YesOrNo ()
 SelectPartitions ()
 {
 
-    isSwapped="Yes"
+    isSwapped=""
 
     while [[ "$input" != [yYnN] ]]; do
 	read -p "Do you want a SWAP partition? (y/n): " input
@@ -28,47 +37,65 @@ SelectPartitions ()
 	fi
     done
   
-    echo -e "\nNow you'll get prompted to enter your device blocks for each partition. Each partition will be formatted!"
-     
-    read -p "Boot partition (e.g /dev/sda1): " bp
-    if [ $isSwapped == "y" ]
-        then
-            read -p "SWAP partition: " sp
-        fi
-    read -p "Root partition (/): " rp
+    while [ 1 ]; do
+        echo -e "\nEnter device block numbers."
+         
+        read -p "Boot partition (e.g /dev/sda1): " bp
+        checkPart "$bp"
 
-    checkPartitions
+        if [[ "$isSwapped" == [yY] ]]
+            then
+                read -p "SWAP partition: " sp
+	        checkPart "$sp"
+            fi
+        read -p "Root partition: " rp
+        checkPart $rp
+
+	$(checkPart $rp > /dev/null)
+	if [ $partEnd == 0 ]; then
+	    break
+	fi
+    done
+
     # formatPartitions
 
 }
 
-checkPartitions()
+checkPart()
 {
-    PARTITIONS=($bp $sp $rp)
-    for part in PARTITIONS 
-    do
-	echo $part
-    done
-    checkPart=$(lsblk | sed 's=/dev/==')
-    if [ $? == 0 ]
-    then
-	echo "Létezik."
+    selectedDevice=$(echo $1 | sed 's=/dev/==' )
+
+    if [[ "$selectedDevice" =~ ^sd[a-z]+[0-9]+$ ]]; then
+	$(lsblk | grep "$selectedDevice" > /dev/null)
+
+	if [ $? == 0 ]; then
+
+	    echo "${devices[@]}" | grep "$selectedDevice" > /dev/null
+	    if [[ $? == 0 ]]; then
+		echo "Device is already used."
+	    else
+		devices+=($selectedDevice)
+		echo "Device added!"
+		if [[ $1 == $rp ]]; then
+		    partEnd=0
+		fi
+	    fi
+
+	else
+	    echo "Device block does not exist in partition table!"
+	    devices=()
+	fi
     else
-	echo "Nem"
-    fi
-    
-    echo "Boot partition will be: $bp"
-    if [[ $sp == [yY] ]]
-    then
-	echo "SWAP partition will be: $sp"
+	echo "Device block was not entered correctly."
+	devices=()
     fi
 
-    echo "Root partition will be: $rp"
 }
 
-# formatPartitions()
-# {
-# }
+formatPartitions()
+{
+
+}
 
 setup () {
     echo '  ______                       __               ______                                 __ '
