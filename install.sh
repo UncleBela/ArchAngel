@@ -57,7 +57,7 @@ SelectPartitions ()
 	fi
     done
 
-    # formatPartitions
+    formatPartitions
 
 }
 
@@ -94,7 +94,12 @@ checkPart()
 
 formatPartitions()
 {
-
+    mkfs.ext4 $rp
+    mkfs.vfat -F32 $bp
+    if [ $isSwapped == 0 ]; then
+	mkswap $sp
+	swapon
+    fi
 }
 
 setup () {
