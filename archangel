@@ -57,8 +57,6 @@ SelectPartitions ()
 	fi
     done
 
-    formatPartitions
-
 }
 
 checkPart()
@@ -89,18 +87,107 @@ checkPart()
 	echo "Device block was not entered correctly."
 	devices=()
     fi
-
 }
 
 formatPartitions()
 {
-    mkfs.ext4 $rp
-    mkfs.vfat -F32 $bp
-    if [ $isSwapped == 0 ]; then
-	mkswap $sp
-	swapon
-    fi
+ #    mkfs.ext4 $rp
+ #    mkfs.vfat -F32 $bp
+ #    if [ $isSwapped == 0 ]; then
+	# mkswap $sp
+	# swapon
+ #    fi
+    echo -e "\nSimulating formatting..."
 }
+
+mountSystem()
+{
+    # echo "Mounting filesystems..."
+    # mount -t ext4 "${rp} /mnt"
+    # mkdir -p /mnt/boot
+    # mount -t vfat "${bp} /mnt/boot/"
+}
+
+userCreation()
+{
+    # Setting up user
+    # read -e "Username: " userName
+    # read -e "Hostname: " hostName
+    # read -s -p "Password: " password
+    echo "Created users..."
+}
+
+languageSelection()
+{
+    read -p "Please enter your language: " langSelect 
+    langSelect=$(echo ${langSelect,,})
+    echo ${langSelect}
+
+    case $langSelect in
+	hungarian)
+	    echo "Hello."
+	    ;;
+    esac
+
+}
+
+baseInstall()
+{
+    # echo "Populating Arch Linux keyring..."
+    # pacman-key --populate
+    # pacman -Sy archlinux-keyring
+
+   
+    # Kernel and base packages
+    # pacstrap /mnt base base-devel linux linux-firmware --noconfirm --needed
+    echo "Simulating base installation..."
+
+    # Network tools
+    # pacstrap /mnt networkmanager network-manager-applet wireless_tools neovim intel-ucode bluez bluez-utils blueman git --noconfirm --needed
+    echo "Simulating network tools installation..."
+
+    # fstab setup
+    # genfstab -U /mnt >> /mnt/etc/fstab
+
+    # Installing the bootloader
+    # echo "Installing the bootloader..."
+    # bootctl install --path /mnt/boot
+    # echo "default arch.conf" >> /mnt/boot/loader/loader.conf
+    echo "Bootloader installed..."
+
+    userCreation
+
+cat <<EOF > /mnt/boot/loader/entries/arch.conf
+    title Arch Linux
+    linux /vmlinuz-linux
+    initrd /initramfs-linux.img
+    options root=${rp} rw
+EOF
+
+    cat <<ENDOFSCRIPT > /mnt/userinstall.sh
+    useradd -m $userName
+    usermod -aG wheel,storage,power,audio $userName
+    echo $userName:$password | chpasswd
+    sed -i 's/^# wheel ALL=(ALL:ALL) ALL/%wheel ALL=(ALL:ALL) ALL/' etc/sudoers
+
+    echo "Setting up language and locale"
+
+
+ENDOFSCRIPT
+    
+
+}
+
+desktopInstall()
+{
+    local de=("xfce4" "gnome" "kde" "xorg")
+    echo -e "\nChoose a desktop environment from the list below."
+    echo ${de[@]}
+    read -p ": " deSelection
+    echo "$deSelection is being installed..."
+}
+
+
 
 setup () {
     echo '  ______                       __               ______                                 __ '
@@ -121,6 +208,10 @@ setup () {
 
     YesOrNo "Do you want your block devices to be listed?" lsblk
     SelectPartitions
+    formatPartitions
+    baseInstall
+    desktopInstall
+
     echo "$r"
 }
 

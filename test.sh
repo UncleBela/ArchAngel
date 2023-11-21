@@ -1,5 +1,3 @@
-#/bin/sh
-device="sda1"
-
-$(lsblk | grep -o "$device" > /dev/null)
-echo $?
+read -p "Please enter your language: " langSelect 
+langSelect=$(echo ${langSelect,,})
+echo ${langSelect}
