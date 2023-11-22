@@ -135,8 +135,8 @@ baseInstall()
 
    
     # Kernel and base packages
-    pacstrap /mnt base base-devel linux linux-firmware --noconfirm --needed
     echo "Simulating base installation..."
+    pacstrap /mnt base base-devel linux linux-firmware --noconfirm --needed
 
     # Network tools
     pacstrap /mnt networkmanager network-manager-applet wireless_tools neovim intel-ucode bluez bluez-utils blueman git --noconfirm --needed
