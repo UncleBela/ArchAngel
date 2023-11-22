@@ -191,7 +191,7 @@ displayAndAudio()
 
     pacman -S pulseaudio --noconfirm --needed
 
-    local de=("xfce4" "xorg" "dwm")
+    de=("xfce4" "xorg" "dwm")
     while [[ $deRET != 0 ]]; do
 	echo -e "\nAvailable environments: "
 	echo ${de[@]}
@@ -216,7 +216,8 @@ displayAndAudio()
 		    cd angelpilled-configs/suckless
 		    ./build.sh
 		    break
-
+		    ;;
+	    esac
 	else
 	    echo "Entered package was not found. Please try again."
 	fi
