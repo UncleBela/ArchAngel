@@ -117,11 +117,6 @@ userCreation()
     echo "Created users..."
 }
 
-languageSelection()
-{
-
-}
-
 networkConfig()
 {
     echo "$hostName" > /etc/hostname
