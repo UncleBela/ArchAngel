@@ -119,16 +119,17 @@ userCreation()
 
 languageSelection()
 {
-    read -p "Please enter your language: " langSelect 
-    langSelect=$(echo ${langSelect,,})
-    echo ${langSelect}
 
-    case $langSelect in
-	hungarian)
-	    echo "Hello."
-	    ;;
-    esac
+}
 
+networkConfig()
+{
+    echo "$hostName" > /etc/hostname
+    cat <<EOF > /etc/hosts
+    127.0.0.1	localhost
+    ::1		localhost
+    127.0.1.1	arch.localdomain	arch
+EOF
 }
 
 baseInstall()
@@ -155,8 +156,6 @@ baseInstall()
     # echo "default arch.conf" >> /mnt/boot/loader/loader.conf
     echo "Bootloader installed..."
 
-    userCreation
-
 cat <<EOF > /mnt/boot/loader/entries/arch.conf
     title Arch Linux
     linux /vmlinuz-linux
@@ -164,30 +163,74 @@ cat <<EOF > /mnt/boot/loader/entries/arch.conf
     options root=${rp} rw
 EOF
 
+
+
+displayAndAudio()
+{
+
     cat <<ENDOFSCRIPT > /mnt/userinstall.sh
     useradd -m $userName
     usermod -aG wheel,storage,power,audio $userName
     echo $userName:$password | chpasswd
     sed -i 's/^# wheel ALL=(ALL:ALL) ALL/%wheel ALL=(ALL:ALL) ALL/' etc/sudoers
 
-    echo "Setting up language and locale"
+    read -p "Please enter keyboard language: " keyLang 
+    keyLang=$(echo ${keyLang,,})
+    echo ${keyLang}
 
+    echo "Setting up language and locale..."
+    sed -i 's/^#en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen
+    locale-gen
+    echo "LANG=en_US.UTF-8" >> /etc/locale.conf
+
+    case $keyLang in
+	hungarian)
+	    echo "Hungarian layout set up."
+	    echo "KEYMAP=hu101" > /etc/vconsole.conf
+	    ;;
+    esac
+
+    deRET=1
+
+    pacman -S pulseaudio --noconfirm --needed
+
+    local de=("xfce4" "xorg" "dwm")
+    while [[ $deRET != 0 ]]; do
+	echo -e "\nAvailable environments: "
+	echo ${de[@]}
+	read -p "Choose a DE, WM or system: " SelectedDE
+
+	echo ${de[@]} | grep $SelectedDE > /dev/null
+	if [ $? == 0 ]; then
+	    deRET=0
+	    case $SelectedDE in
+		xfce4)
+		    echo "$SelectedDE is being installed..."
+		    pacman -S xfce4 lightdm lightdm-gtk-greeter --noconfirm --needed
+		    ;;
+		xorg)
+		    echo "$SelectedDE is being installed..."
+		    pacman -S xorg-server xorg-xinit
+		    ;;
+		dwm)
+		    mkdir -p Git
+		    cd Git
+		    git clone https://github.com/angelpilled/angelpilled-configs
+		    cd angelpilled-configs/suckless
+		    ./build.sh
+		    break
+
+	else
+	    echo "Entered package was not found. Please try again."
+	fi
+
+    done
+
+echo "Installation was successful. Now you can reboot into your newly created system."
 
 ENDOFSCRIPT
-    
 
 }
-
-desktopInstall()
-{
-    local de=("xfce4" "gnome" "kde" "xorg")
-    echo -e "\nChoose a desktop environment from the list below."
-    echo ${de[@]}
-    read -p ": " deSelection
-    echo "$deSelection is being installed..."
-}
-
-
 
 setup () {
     echo '  ______                       __               ______                                 __ '
@@ -211,6 +254,11 @@ setup () {
     formatPartitions
     baseInstall
     desktopInstall
+    mountSystem
+    userCreation
+    languageSelection
+
+    arch-chroot /mnt sh userinstall.sh
 
     echo "$r"
 }
