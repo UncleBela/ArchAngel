@@ -164,7 +164,7 @@ displayAndAudio()
     cat <<'ENDOFSCRIPT' > /mnt/userinstall.sh
     useradd -m $userName
     usermod -aG wheel,storage,power,audio $userName
-    echo $userName:$password | chpasswd
+    passwd $password
     sed -i 's/^# wheel ALL=(ALL:ALL) ALL/%wheel ALL=(ALL:ALL) ALL/' etc/sudoers
 
     read -p "Please enter keyboard language: " keyLang 
