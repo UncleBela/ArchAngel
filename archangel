@@ -246,9 +246,9 @@ setup () {
     YesOrNo "Do you want your block devices to be listed?" lsblk
     SelectPartitions
     formatPartitions
+    mountSystem
     baseInstall
     displayAndAudio
-    mountSystem
     userCreation
     languageSelection
 
