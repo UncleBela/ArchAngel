@@ -91,29 +91,29 @@ checkPart()
 
 formatPartitions()
 {
- #    mkfs.ext4 $rp
- #    mkfs.vfat -F32 $bp
- #    if [ $isSwapped == 0 ]; then
-	# mkswap $sp
-	# swapon
- #    fi
+    mkfs.ext4 $rp
+    mkfs.vfat -F32 $bp
+    if [ $isSwapped == 0 ]; then
+	mkswap $sp
+	swapon
+    fi
     echo -e "\nSimulating formatting..."
 }
 
 mountSystem()
 {
-    # echo "Mounting filesystems..."
-    # mount -t ext4 "${rp} /mnt"
-    # mkdir -p /mnt/boot
-    # mount -t vfat "${bp} /mnt/boot/"
+    echo "Mounting filesystems..."
+    mount -t ext4 "${rp} /mnt"
+    mkdir -p /mnt/boot
+    mount -t vfat "${bp} /mnt/boot/"
 }
 
 userCreation()
 {
-    # Setting up user
-    # read -e "Username: " userName
-    # read -e "Hostname: " hostName
-    # read -s -p "Password: " password
+    Setting up user
+    read -e "Username: " userName
+    read -e "Hostname: " hostName
+    read -s -p "Password: " password
     echo "Created users..."
 }
 
@@ -135,25 +135,25 @@ EOF
 baseInstall()
 {
     # echo "Populating Arch Linux keyring..."
-    # pacman-key --populate
-    # pacman -Sy archlinux-keyring
+    pacman-key --populate
+    pacman -Sy archlinux-keyring
 
    
     # Kernel and base packages
-    # pacstrap /mnt base base-devel linux linux-firmware --noconfirm --needed
+    pacstrap /mnt base base-devel linux linux-firmware --noconfirm --needed
     echo "Simulating base installation..."
 
     # Network tools
-    # pacstrap /mnt networkmanager network-manager-applet wireless_tools neovim intel-ucode bluez bluez-utils blueman git --noconfirm --needed
+    pacstrap /mnt networkmanager network-manager-applet wireless_tools neovim intel-ucode bluez bluez-utils blueman git --noconfirm --needed
     echo "Simulating network tools installation..."
 
     # fstab setup
-    # genfstab -U /mnt >> /mnt/etc/fstab
+    genfstab -U /mnt >> /mnt/etc/fstab
 
     # Installing the bootloader
-    # echo "Installing the bootloader..."
-    # bootctl install --path /mnt/boot
-    # echo "default arch.conf" >> /mnt/boot/loader/loader.conf
+    echo "Installing the bootloader..."
+    bootctl install --path /mnt/boot
+    echo "default arch.conf" >> /mnt/boot/loader/loader.conf
     echo "Bootloader installed..."
 
 cat <<EOF > /mnt/boot/loader/entries/arch.conf
