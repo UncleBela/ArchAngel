@@ -110,9 +110,9 @@ mountSystem()
 
 userCreation()
 {
-    Setting up user
-    read -e "Username: " userName
-    read -e "Hostname: " hostName
+    echo "Setting up user..."
+    read -p "Username: " userName
+    read -p "Hostname: " hostName
     read -s -p "Password: " password
     echo "Created users..."
 }
@@ -131,7 +131,7 @@ baseInstall()
 {
     # echo "Populating Arch Linux keyring..."
     pacman-key --populate
-    pacman -Sy archlinux-keyring
+    pacman -Sy archlinux-keyring --noconfirm --needed
 
    
     # Kernel and base packages
@@ -157,8 +157,7 @@ cat <<EOF > /mnt/boot/loader/entries/arch.conf
     initrd /initramfs-linux.img
     options root=${rp} rw
 EOF
-
-
+}
 
 displayAndAudio()
 {
@@ -248,7 +247,7 @@ setup () {
     SelectPartitions
     formatPartitions
     baseInstall
-    desktopInstall
+    displayAndAudio
     mountSystem
     userCreation
     languageSelection
