@@ -102,9 +102,9 @@ formatPartitions()
 mountSystem()
 {
     echo "Mounting filesystems..."
-    mount "${rp}" /mnt
+    mount -t ext4 "${rp}" /mnt
     mkdir -p /mnt/boot
-    mount "${bp}" /mnt/boot/
+    mount -t vfat "${bp}" /mnt/boot/
 }
 
 userCreation()
@@ -257,8 +257,6 @@ setup () {
     languageSelection
 
     arch-chroot /mnt sh userinstall.sh
-
-    echo "$r"
 }
 
 setup
