@@ -56,7 +56,6 @@ SelectPartitions ()
 	    break
 	fi
     done
-
 }
 
 checkPart()
@@ -92,7 +91,7 @@ checkPart()
 formatPartitions()
 {
     mkfs.ext4 $rp
-    mkfs.vfat $(-F32) $bp
+    mkfs.vfat -F32 $bp
     if [ $isSwapped == 0 ]; then
 	mkswap $sp
 	swapon
@@ -162,7 +161,7 @@ EOF
 displayAndAudio()
 {
 
-    cat <<ENDOFSCRIPT > /mnt/userinstall.sh
+    cat <<'ENDOFSCRIPT' > /mnt/userinstall.sh
     useradd -m $userName
     usermod -aG wheel,storage,power,audio $userName
     echo $userName:$password | chpasswd
@@ -179,6 +178,10 @@ displayAndAudio()
 
     case $keyLang in
 	hungarian)
+	    echo "Hungarian layout set up."
+	    echo "KEYMAP=hu101" > /etc/vconsole.conf
+	    ;;
+	*)
 	    echo "Hungarian layout set up."
 	    echo "KEYMAP=hu101" > /etc/vconsole.conf
 	    ;;
