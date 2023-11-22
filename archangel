@@ -103,9 +103,9 @@ formatPartitions()
 mountSystem()
 {
     echo "Mounting filesystems..."
-    mount -t ext4 "${rp} /mnt"
+    mount "${rp}" /mnt
     mkdir -p /mnt/boot
-    mount -t vfat "${bp} /mnt/boot/"
+    mount "${bp}" /mnt/boot/
 }
 
 userCreation()
