@@ -259,4 +259,3 @@ setup () {
     arch-chroot /mnt sh userinstall.sh
 }
 
-setup
