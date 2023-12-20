@@ -64,8 +64,8 @@ install_suckless()
 	    echo -e "Installing suckless software...\n"
 
 	    sudo pacman -S --needed --noconfirm make gcc webkit2gtk gcr libavif
-	    yay -S --needed --noconfirm ttf-iosevka ttf-font-awesome
 	    cd ~
+	    yay -S --needed --noconfirm ttf-iosevka ttf-font-awesome
 	    git init angel-suckless
 	    cd angel-suckless
 	    git remote add origin https://github.com/angelpilled/angelpilled-configs
@@ -86,10 +86,16 @@ install_suckless()
 install_favorites()
 {
     read -n1 -p "angelpilled's favorite softwares will be installed now. Do you wish to proceed? (y/n) " answer
+    echo -e
     case $answer in
 	[Yy])
-	    sudo pacman -S --needed --noconfirm neofetch tmux terminus-font cmus firefox alsa-utils pulseaudio-alsa gnome-themes-extra lxappearance cowsay fortune-mod xorg xorg-xinit vlc thunar tumbler ntfs-3g npm luajit maim xbindkeys htop xrandr arandr filezilla gimp picom feh python unzip xclip neovim
-	    cd ~ && git clone https://aur.archlinux.org/yay.git && cd yay && makepkg -si
+	    sudo pacman -S --needed --noconfirm neofetch tmux terminus-font cmus firefox alsa-utils pulseaudio-alsa gnome-themes-extra lxappearance cowsay fortune-mod xorg xorg-xinit vlc thunar tumbler ntfs-3g npm luajit maim xbindkeys htop arandr filezilla gimp picom feh python unzip xclip neovim
+
+	    ls /usr/bin/yay &> /dev/null
+	    if [ $? -ne 0 ]; then
+		cd ~ && git clone https://aur.archlinux.org/yay.git && cd yay && makepkg -si
+	    fi
+
 	    ;;
 	[nN])
 	    echo -e "\nExiting to main menu.\n"
