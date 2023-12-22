@@ -128,6 +128,8 @@ EOF
 
 baseInstall()
 {
+    read "Press a key to start installation."
+    read "Press another key to start installation."
     # echo "Populating Arch Linux keyring..."
     pacman-key --populate
     pacman -Sy archlinux-keyring --noconfirm --needed
@@ -245,7 +247,7 @@ setup () {
     echo -e '                                                                   $$$$$$/                \n'
     
     echo ""
-    echo -e "Welcome to angelpilled's Arch Angel install script. This shell script\nwill install Arch Linux easily, hopefully without any road blocks.\n"
+    echo -e "Welcome to angelpilled's Arch Angel archinstall script. This shell script\nwill install Arch Linux easily, hopefully without any roadblocks.\n"
 
     YesOrNo "Do you want your block devices to be listed?" lsblk
     SelectPartitions
@@ -259,3 +261,4 @@ setup () {
     arch-chroot /mnt sh userinstall.sh
 }
 
+setup

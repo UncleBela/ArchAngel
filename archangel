@@ -1,7 +1,10 @@
 #!/bin/sh
 
+ARCHANGEL=$(pwd)
+
 setup()
 {
+    clear
     echo '  ______                       __               ______                                 __ '
     echo ' /      \                     /  |             /      \                               /  |'
     echo '/$$$$$$  |  ______    _______ $$ |____        /$$$$$$  | _______    ______    ______  $$ |'
@@ -22,8 +25,8 @@ archangelmenu()
 {
     echo -e " Key            Menu Option              Description"
     echo -e "-----   ----------------------------  -----------------"
-    echo -e " [1]  -  Suckless Software            (angelpilled's pre-configured suckless softwares)"
-    echo -e " [2]  -  Dev's Favorites              (angelpilled's favorite softwares)"
+    echo -e " [1]  -  Angelpilled Package          (Install angelpilled's configurations)"
+    echo -e " [2]  -  Dev's Favorites              (Install angelpilled's favorite softwares)"
     echo -e " [3]  -  Cybersec Tools               (Install the top 10 most used cybersecurity tools.)"
     echo -e " [4]  -  Scientist's Tools            (Installs the best scientific software)"
     echo -e " [5]  -  Desktop Environments         (Install DEs like KDE, XFCE4, Gnome, etc.)"
@@ -42,43 +45,58 @@ archangelmenu()
 optionsList()
 {
 case $menuinput in
-      1) install_suckless;;
-      2) install_favorites;;
-      3) install_cybersec;;
-      4) install_de;;
-
-      a|A) install_arch;;
-
-      x|X|q|Q) echo -e "\nSee you next time!";;
-    esac
+    1) install_angelpilled;;
+    2) install_favorites;;
+    3) install_cybersec;;
+    4) install_scientific;;
+    5) install_de;;
+    a|A) install_arch;;
+    x|X|q|Q) echo -e "\nSee you next time!";;
+    *) clear && setup
+esac
 }
 
-install_suckless()
+sleepExit()
 {
-    echo -e "This function will install angelpilled's pre-configured suckless software pack.\n"
-    echo "The pack contains: dwm, dmenu, slstatus, st, slock, surf\n"
+    echo -e "Software installation complete. Returning to the main menu in 3 seconds..." && sleep 3
+    setup
+}
+
+install_angelpilled()
+{
+    echo -e "This function will install all the config files I use daily.\n"
+    echo -e "The \"pack\" contains:"
+    echo -e "- Suckless software packages: dwm, dmenu, st, slock, surf, slstatus"
+    echo -e "- Bash config file"
+    echo -e "- Fish shell config file"
+    echo -e "- Neovim config file"
+    echo -e "- Picom config file"
+    echo -e "- Xbindkeys config file"
+    echo -e "- Xinitrc config files"
+    echo -e "- Custom Scripts added to /usr/local/bin"
+    echo -e
 
     read -n1 -p "Proceed to continue? (y/n) " answer; echo -e
     case $answer in
 	[yY])
-	    echo -e "Installing suckless software...\n"
+	    git clone https://github.com/angelpilled/angelpilled-configs.git
+	    echo -e
+	    cd ./angelpilled-configs && ./full-install.sh && cd ..
 
-	    sudo pacman -S --needed --noconfirm make gcc webkit2gtk gcr libavif
-	    cd ~
-	    yay -S --needed --noconfirm ttf-iosevka ttf-font-awesome
-	    git init angel-suckless
-	    cd angel-suckless
-	    git remote add origin https://github.com/angelpilled/angelpilled-configs
-	    git sparse-checkout init --cone
-	    git sparse-checkout set suckless
-	    git pull origin master
-	    cd suckless
-	    ./build.sh
-	    cd ~ && echo -e "Arch Angel: suckless software installation is now finished."
+	    read -n1 -p "Keep \"angelpilled-configs\" for future tweaking? (y/n) " answer; echo -e
+	    case $answer in
+		[yY])
+		    sleepExit
+		    setup
+		    ;;
+		*)
+		    rm -rf ./angelpilled-configs
+		    sleepExit
+		    ;;
+	    esac
 	    ;;
-	[nN])
-	    echo -e "Exiting to main menu.\n"
-	    archangelmenu
+	*)
+	    setup
 	    ;;
     esac
 }
@@ -90,29 +108,37 @@ install_favorites()
     case $answer in
 	[Yy])
 	    sudo pacman -S --needed --noconfirm neofetch tmux terminus-font cmus firefox alsa-utils pulseaudio-alsa gnome-themes-extra lxappearance cowsay fortune-mod xorg xorg-xinit vlc thunar tumbler ntfs-3g npm luajit maim xbindkeys htop arandr filezilla gimp picom feh python unzip xclip neovim
-
 	    ls /usr/bin/yay &> /dev/null
 	    if [ $? -ne 0 ]; then
 		cd ~ && git clone https://aur.archlinux.org/yay.git && cd yay && makepkg -si
 	    fi
-
+	    sleepExit
 	    ;;
-	[nN])
-	    echo -e "\nExiting to main menu.\n"
-	    archangelmenu
+	*)
+	    setup
 	    ;;
     esac
 }
 
 install_cybersec()
 {
+
     echo -e "Install Cybersecurity Tools option selected"
+    read -n1 -p "Proceed to continue? (y/n) " answer; echo -e
+    case $answer in
+	[yY])
+	    echo "Downloading cybersecurity tools from the Official Arch Repository."
+	    sudo pacman -S --needed --noconfirm nmap wireshark-cli metasploit aircrack-ng john hydra sqlmap nikto hashcat
 
-    echo "Downloading cybersecurity tools from the Official Arch Repository."
-	sudo pacman -S --needed --noconfirm nmap wireshark-cli metasploit aircrack-ng john hydra sqlmap nikto hashcat
+	    echo "Installing AUR packages."
+	    yay -S --needed --noconfirm burpsuite
 
-    echo "Installing AUR packages."
-	yay -S --needed --noconfirm burpsuite
+	    sleepExit
+	    ;;
+	*)
+	    setup
+	    ;;
+    esac
 }
 
 install_scientific()
@@ -123,21 +149,53 @@ install_scientific()
 	[yY])
 	    echo "Yaay!"
 	    ;;
-	[nN])
-	    echo "Naa!"
+	*)
+	    setup
 	    ;;
     esac
 }
 
 install_de()
 {
-    # WORK IN PROGRESS !!!!!
-    echo -e "Installing DEs..." 
+    echo -e "Select the available Desktop Environments to install:"
+    echo -e "gnome"
+    echo -e "kde"
+    echo -e "xfce"
+    echo -e "cinnamon"
+    echo -e "mate"
+    read -p "Enter your choice: " choice
+    choice=${choice,,}
+
+    case $choice in
+	gnome)
+	    sudo pacman -S --needed --noconfirm gnome
+	    sleepExit 
+	    ;; 
+	kde)
+	    sudo pacman -S --needed --noconfirm plasma kde-applications
+	    sleepExit 
+	    ;; 
+	xfce)
+	    sudo pacman -S --needed --noconfirm xfce4
+	    sleepExit 
+	    ;; 
+	cinnamon)
+	    sudo pacman -S --needed --noconfirm cinnamon
+	    sleepExit 
+	    ;; 
+	mate)
+	    sudo pacman -S --needed --noconfirm mate
+	    sleepExit 
+	    ;; 
+	*) echo "Invalid option. Exiting in 3 seconds..." && sleep 3 && setup
+    esac
 }
 
 install_arch()
 {
-    echo "Installing Arch Linux...\n"
+    clear
+    # curl -O https://raw.githubusercontent.com/angelpilled/ArchAngel/master/install-arch
+    # ./install-arch
 }
 
 setup
