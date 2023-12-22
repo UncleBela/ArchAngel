@@ -249,6 +249,9 @@ setup () {
     echo ""
     echo -e "Welcome to angelpilled's Arch Angel archinstall script. This shell script\nwill install Arch Linux easily, hopefully without any roadblocks.\n"
 
+    read -s -n1 -p "Please press a key to continue. "
+    echo -e
+
     YesOrNo "Do you want your block devices to be listed?" lsblk
     SelectPartitions
     formatPartitions
