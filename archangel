@@ -34,7 +34,7 @@ archangelmenu()
     echo -e
     echo -e " Key            Standalone               Description"
     echo -e "-----   ----------------------------  -----------------"
-    echo -e " [A]  -  Install Arch Linux           (Install Arch Linux with a simple and quick script!)"
+    echo -e " [A]  -  Install Arch Linux           (Install Arch Linux with a quick and simple script!)"
 
     echo -e ""
     read -n1 -p "Please select an option from the list: " menuinput
