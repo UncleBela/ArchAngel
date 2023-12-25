@@ -37,7 +37,8 @@ archangelmenu()
     echo -e " [A]  -  Install Arch Linux           (Install Arch Linux with a quick and simple script!)"
 
     echo -e ""
-    read -n1 -p "Please select an option from the list: " menuinput
+    read -n1 -p "- Please select an option from the list: " menuinput
+    echo -e
     echo -e
     optionsList
 }
@@ -51,39 +52,39 @@ case $menuinput in
     4) install_scientific;;
     5) install_de;;
     a|A) install_arch;;
-    x|X|q|Q) echo -e "\nSee you next time!";;
+    x|X|q|Q) echo -e "- See you next time!";;
     *) clear && setup
 esac
 }
 
 sleepExit()
 {
-    echo -e "Software installation complete. Returning to the main menu in 3 seconds..." && sleep 3
+    echo -e "- Software installation complete. Returning to the main menu in 3 seconds..." && sleep 3
     setup
 }
 
 install_angelpilled()
 {
-    echo -e "This function will install all the config files I use daily.\n"
-    echo -e "The \"pack\" contains:"
-    echo -e "- Suckless software packages: dwm, dmenu, st, slock, surf, slstatus"
-    echo -e "- Bash config file"
-    echo -e "- Fish shell config file"
-    echo -e "- Neovim config file"
-    echo -e "- Picom config file"
-    echo -e "- Xbindkeys config file"
-    echo -e "- Xinitrc config files"
-    echo -e "- Custom Scripts added to /usr/local/bin"
+    echo -e "- This function will install all the config files I use daily.\n"
+    echo -e "- The \"pack\" contains:"
+    echo -e "+ Suckless software packages: dwm, dmenu, st, slock, surf, slstatus"
+    echo -e "+ Bash config file"
+    echo -e "+ Fish shell config file"
+    echo -e "+ Neovim config file"
+    echo -e "+ Picom config file"
+    echo -e "+ Xbindkeys config file"
+    echo -e "+ Xinitrc config files"
+    echo -e "+ Custom Scripts added to /usr/local/bin"
     echo -e
 
-    read -n1 -p "Proceed to continue? (y/n) " answer; echo -e
+    read -n1 -p "- Proceed to continue? (y/n) " answer; echo -e
     case $answer in
 	[yY])
 	    git clone https://github.com/angelpilled/angelpilled-configs.git
 	    echo -e
 	    cd ./angelpilled-configs && ./full-install.sh && cd ..
 
-	    read -n1 -p "Keep \"angelpilled-configs\" for future tweaking? (y/n) " answer; echo -e
+	    read -n1 -p "- Keep \"angelpilled-configs\" for future tweaking? (y/n) " answer; echo -e
 	    case $answer in
 		[yY])
 		    sleepExit
@@ -103,7 +104,7 @@ install_angelpilled()
 
 install_favorites()
 {
-    read -n1 -p "angelpilled's favorite softwares will be installed now. Do you wish to proceed? (y/n) " answer
+    read -n1 -p "- angelpilled's favorite softwares will be installed now. Do you wish to proceed? (y/n) " answer
     echo -e
     case $answer in
 	[Yy])
@@ -123,14 +124,14 @@ install_favorites()
 install_cybersec()
 {
 
-    echo -e "Install Cybersecurity Tools option selected"
-    read -n1 -p "Proceed to continue? (y/n) " answer; echo -e
+    echo -e "- Install Cybersecurity Tools option selected"
+    read -n1 -p "- Proceed to continue? (y/n) " answer; echo -e
     case $answer in
 	[yY])
-	    echo "Downloading cybersecurity tools from the Official Arch Repository."
+	    echo "- Downloading cybersecurity tools from the Official Arch Repository."
 	    sudo pacman -S --needed --noconfirm nmap wireshark-cli metasploit aircrack-ng john hydra sqlmap nikto hashcat
 
-	    echo "Installing AUR packages."
+	    echo "- Installing AUR packages."
 	    yay -S --needed --noconfirm burpsuite
 
 	    sleepExit
@@ -143,11 +144,17 @@ install_cybersec()
 
 install_scientific()
 {
-    # WORK IN PROGRESS !!!!!
-    read -n1 -p "Scientific software will be installed. Do you wish to proceed? (y/n) " answer
+    echo -e "- The following packages will be installed: GNU Octave, LaTeX binaries, Zathura PDF Viewer, Octave, Geogebra, GNU R, GNU Plot"
+    read -n1 -p "- Do you wish to proceed? (y/n) " answer
     case $answer in
 	[yY])
-	    echo "Yaay!"
+	    echo -e "\n- Installing packages... "
+	    sudo pacman -S --needed --noconfirm texlive texlive-binextra zathura octave geogebra r gnuplot
+	    if [ ! -d ~/.config/zathura ]; then
+		echo -e "- Installing Zathura dracula theme. Press CTRL-R to to toggle."
+		git clone https://github.com/dracula/zathura ~/.config/zathura/
+	    fi
+	    sleepExit
 	    ;;
 	*)
 	    setup
@@ -157,12 +164,14 @@ install_scientific()
 
 install_de()
 {
-    echo -e "Select the available Desktop Environments to install:"
-    echo -e "gnome"
-    echo -e "kde"
-    echo -e "xfce"
-    echo -e "cinnamon"
-    echo -e "mate"
+    echo -e "- Select the available Desktop Environments to install:"
+    echo -e "+ gnome"
+    echo -e "+ kde"
+    echo -e "+ xfce"
+    echo -e "+ cinnamon"
+    echo -e "+ mate"
+    echo -e
+    echo -e "(+ exit)"
     read -p "Enter your choice: " choice
     choice=${choice,,}
 
@@ -187,16 +196,28 @@ install_de()
 	    sudo pacman -S --needed --noconfirm mate
 	    sleepExit 
 	    ;; 
+	exit)
+	    echo -e "Exiting to main menu in 3 seconds..." && sleep 3 && setup
+	    ;;
 	*) echo "Invalid option. Exiting in 3 seconds..." && sleep 3 && setup
     esac
 }
 
 install_arch()
 {
-    curl -O https://raw.githubusercontent.com/angelpilled/ArchAngel/master/scripts/install-arch
-    chmod +x ./install-arch
-    clear
-    ./install-arch
+    echo -e "- You've selected Arch Linux installation."
+    read -n1 -p "- Do you wish to proceed? (y/n) " answer
+    case $answer in
+	[yY])
+	    curl -O https://raw.githubusercontent.com/angelpilled/ArchAngel/master/scripts/install-arch
+	    chmod +x ./install-arch
+	    clear
+	    ./install-arch
+	    ;;
+	*)
+	    setup
+	    ;;
+    esac
 }
 
 setup
