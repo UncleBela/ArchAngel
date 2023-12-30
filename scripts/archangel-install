@@ -1,0 +1,259 @@
+#!/bin/sh
+
+# Declaring variables
+devices=()
+isDone=1
+partEnd=1
+
+# Beginning of all functions
+
+setup () {
+    echo '  ______                       __               ______                                 __ '
+    echo ' /      \                     /  |             /      \                               /  |'
+    echo '/$$$$$$  |  ______    _______ $$ |____        /$$$$$$  | _______    ______    ______  $$ |'
+    echo '$$ |__$$ | /      \  /       |$$      \       $$ |__$$ |/       \  /      \  /      \ $$ |'
+    echo '$$    $$ |/$$$$$$  |/$$$$$$$/ $$$$$$$  |      $$    $$ |$$$$$$$  |/$$$$$$  |/$$$$$$  |$$ |'
+    echo '$$$$$$$$ |$$ |  $$/ $$ |      $$ |  $$ |      $$$$$$$$ |$$ |  $$ |$$ |  $$ |$$    $$ |$$ |'
+    echo '$$ |  $$ |$$ |      $$ \_____ $$ |  $$ |      $$ |  $$ |$$ |  $$ |$$ \__$$ |$$$$$$$$/ $$ |'
+    echo '$$ |  $$ |$$ |      $$       |$$ |  $$ |      $$ |  $$ |$$ |  $$ |$$    $$ |$$       |$$ |'
+    echo '$$/   $$/ $$/        $$$$$$$/ $$/   $$/       $$/   $$/ $$/   $$/  $$$$$$$ | $$$$$$$/ $$/ '
+    echo '                                                                  /  \__$$ |              '
+    echo '                                                                  $$    $$/               '
+    echo -e '                                                                   $$$$$$/                \n'
+
+    echo ""
+    echo -e "Welcome to angelpilled's Arch Angel archinstall script. This shell script\nwill install Arch Linux easily, hopefully without any roadblocks.\n"
+
+    read -s -n1 -p "Please press a key to continue. "
+    echo -e
+
+    YesOrNo "Do you want your block devices to be listed?" lsblk
+    SelectPartitions
+    formatPartitions
+    mountSystem
+    baseInstall
+    displayAndAudio
+    userCreation
+    languageSelection
+
+    arch-chroot /mnt sh userinstall.sh
+}
+
+
+YesOrNo ()
+{
+    read -p "$1 (y/n): " yn 
+    if [[ "$yn" == [yY] ]]
+    then
+	echo -e "Listing devices...\n"
+	$2
+	echo -e
+    else
+	continue
+    fi
+}
+
+SelectPartitions ()
+{
+
+    isSwapped=""
+
+    while [[ "$input" != [yYnN] ]]; do
+	read -p "Do you want a SWAP partition? (y/n): " input
+	if [[ "$input" == [yY] ]]
+	then
+	    echo "SWAP partition will be made."
+	    isSwapped="y"
+	elif [[ "$input" == [nN] ]]
+	then
+	    echo "SWAP partition will not be made."
+	fi
+    done
+
+    while [ 1 ]; do
+        echo -e "\nEnter device block numbers."
+
+        read -p "Boot partition (e.g /dev/sda1): " bp
+        checkPart "$bp"
+
+        if [[ "$isSwapped" == [yY] ]]
+            then
+                read -p "SWAP partition: " sp
+	        checkPart "$sp"
+            fi
+        read -p "Root partition: " rp
+        checkPart $rp
+
+	$(checkPart $rp > /dev/null)
+	if [ $partEnd == 0 ]; then
+	    break
+	fi
+    done
+}
+
+checkPart()
+{
+    selectedDevice=$(echo $1 | sed 's=/dev/==' )
+
+    if [[ "$selectedDevice" =~ ^sd[a-z]+[0-9]+$ ]]; then
+	$(lsblk | grep "$selectedDevice" > /dev/null)
+
+	if [ $? == 0 ]; then
+
+	    echo "${devices[@]}" | grep "$selectedDevice" > /dev/null
+	    if [[ $? == 0 ]]; then
+		echo "Device is already used."
+	    else
+		devices+=($selectedDevice)
+		echo "Device added!"
+		if [[ $1 == $rp ]]; then
+		    partEnd=0
+		fi
+	    fi
+
+	else
+	    echo "Device block does not exist in partition table!"
+	    devices=()
+	fi
+    else
+	echo "Device block was not entered correctly."
+	devices=()
+    fi
+}
+
+formatPartitions()
+{
+    mkfs.ext4 $rp
+    mkfs.vfat -F32 $bp
+    if [ $isSwapped == 0 ]; then
+	mkswap $sp
+	swapon
+    fi
+    echo -e "\nSimulating formatting..."
+}
+
+mountSystem()
+{
+    echo "Mounting filesystems..."
+    mount -t ext4 "${rp}" /mnt
+    mkdir -p /mnt/boot
+    mount -t vfat "${bp}" /mnt/boot/
+}
+
+userCreation()
+{
+    echo "Setting up user..."
+    read -p "Username: " userName
+    read -p "Hostname: " hostName
+    read -s -p "Password: " password
+    echo "Created users..."
+}
+
+networkConfig()
+{
+    echo "$hostName" > /etc/hostname
+    cat <<EOF > /etc/hosts
+    127.0.0.1	localhost
+    ::1		localhost
+    127.0.1.1	arch.localdomain	arch
+EOF
+}
+
+baseInstall()
+{
+    read "Press a key to start installation."
+    read "Press another key to start installation."
+    # echo "Populating Arch Linux keyring..."
+    pacman-key --populate
+    pacman -Sy archlinux-keyring --noconfirm --needed
+
+
+    # Kernel and base packages
+    echo "Simulating base installation..."
+    pacstrap /mnt base base-devel linux linux-firmware --noconfirm --needed
+
+    # Network tools
+    pacstrap /mnt networkmanager network-manager-applet wireless_tools neovim intel-ucode bluez bluez-utils blueman git --noconfirm --needed
+    echo "Simulating network tools installation..."
+
+    # fstab setup
+    genfstab -U /mnt >> /mnt/etc/fstab
+
+    # Installing the bootloader
+    echo "Installing the bootloader..."
+    bootctl install --path /mnt/boot
+    echo "default arch.conf" >> /mnt/boot/loader/loader.conf
+    echo "Bootloader installed..."
+
+cat <<EOF > /mnt/boot/loader/entries/arch.conf
+    title Arch Linux
+    linux /vmlinuz-linux
+    initrd /initramfs-linux.img
+    options root=${rp} rw
+EOF
+}
+
+displayAndAudio()
+{
+
+    cat <<'ENDOFSCRIPT' > /mnt/userinstall.sh
+    useradd -m $userName
+    usermod -aG wheel,storage,power,audio $userName
+    passwd $password
+    sed -i 's/^# wheel ALL=(ALL:ALL) ALL/%wheel ALL=(ALL:ALL) ALL/' etc/sudoers
+    read -p "Please enter keyboard language: " keyLang 
+    keyLang=$(echo ${keyLang,,})
+    echo ${keyLang}
+    echo "Setting up language and locale..."
+    sed -i 's/^#en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen
+    locale-gen
+    echo "LANG=en_US.UTF-8" >> /etc/locale.conf
+    case $keyLang in
+	hungarian)
+	    echo "Hungarian layout set up."
+	    echo "KEYMAP=hu101" > /etc/vconsole.conf
+	    ;;
+	*)
+	    echo "Hungarian layout set up."
+	    echo "KEYMAP=hu101" > /etc/vconsole.conf
+	    ;;
+    esac
+    deRET=1
+    pacman -S pulseaudio --noconfirm --needed
+    de=("xfce4" "xorg" "dwm")
+    while [[ $deRET != 0 ]]; do
+	echo -e "\nAvailable environments: "
+	echo ${de[@]}
+	read -p "Choose a DE, WM or system: " SelectedDE
+	echo ${de[@]} | grep $SelectedDE > /dev/null
+	if [ $? == 0 ]; then
+	    deRET=0
+	    case $SelectedDE in
+		xfce4)
+		    echo "$SelectedDE is being installed..."
+		    pacman -S xfce4 lightdm lightdm-gtk-greeter --noconfirm --needed
+		    ;;
+		xorg)
+		    echo "$SelectedDE is being installed..."
+		    pacman -S xorg-server xorg-xinit
+		    ;;
+		dwm)
+		    mkdir -p Git
+		    cd Git
+		    git clone https://github.com/angelpilled/angelpilled-configs
+		    cd angelpilled-configs/suckless
+		    ./build.sh
+		    break
+		    ;;
+	    esac
+	else
+	    echo "Entered package was not found. Please try again."
+	fi
+    done
+echo "Installation was successful. Now you can reboot into your newly created system."
+ENDOFSCRIPT
+
+}
+
+
+setup

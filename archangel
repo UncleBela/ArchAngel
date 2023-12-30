@@ -29,7 +29,8 @@ archangelmenu()
     echo -e " [2]  -  Dev's Favorites              (Install angelpilled's favorite softwares)"
     echo -e " [3]  -  Cybersec Tools               (Install the top 10 most used cybersecurity tools.)"
     echo -e " [4]  -  Scientist's Tools            (Installs the best scientific software)"
-    echo -e " [5]  -  Desktop Environments         (Install DEs like KDE, XFCE4, Gnome, etc.)"
+    echo -e " [5]  -  Desktop Environments	   (Install DEs like KDE, XFCE4, Gnome, etc.)"
+    echo -e " [6]  -  Backup System		   (Backs up either root or home, depends on the user)"
 
     echo -e
     echo -e " Key            Standalone               Description"
@@ -51,6 +52,7 @@ case $menuinput in
     3) install_cybersec;;
     4) install_scientific;;
     5) install_de;;
+    5) backup:system;;
     a|A) install_arch;;
     x|X|q|Q) echo -e "- See you next time!";;
     *) clear && setup
@@ -209,10 +211,10 @@ install_arch()
     read -n1 -p "- Do you wish to proceed? (y/n) " answer
     case $answer in
 	[yY])
-	    curl -O https://raw.githubusercontent.com/angelpilled/ArchAngel/master/scripts/install-arch
-	    chmod +x ./install-arch
+	    curl -O https://raw.githubusercontent.com/angelpilled/ArchAngel/master/scripts/archangel-install
+	    chmod +x ./archangel-install
 	    clear
-	    ./install-arch
+	    ./archangel-install
 	    ;;
 	*)
 	    setup
