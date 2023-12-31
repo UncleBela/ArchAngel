@@ -2,6 +2,28 @@
 
 ARCHANGEL=$(pwd)
 
+# Cool functions for easier readibility
+
+promptUser() {
+    local prompt=$1
+    local valid_options=($2)
+    local retval
+    local userinput
+
+    while true; do
+        read -p "$prompt" userinput
+	userinput=${userinput,,}
+        for option in "${valid_options[@]}"; do
+            if [[ $userinput == $option ]]; then
+		echo $userinput
+		return
+            fi
+        done
+    done
+}
+
+# Main archangel script
+
 setup()
 {
     clear
@@ -29,8 +51,8 @@ archangelmenu()
     echo -e " [2]  -  Dev's Favorites              (Install angelpilled's favorite softwares)"
     echo -e " [3]  -  Cybersec Tools               (Install the top 10 most used cybersecurity tools.)"
     echo -e " [4]  -  Scientist's Tools            (Installs the best scientific software)"
-    echo -e " [5]  -  Desktop Environments	   (Install DEs like KDE, XFCE4, Gnome, etc.)"
-    echo -e " [6]  -  Backup System		   (Backs up either root or home, depends on the user)"
+    echo -e " [5]  -  Desktop Environments         (Install DEs like KDE, XFCE4, Gnome, etc.)"
+    echo -e " [6]  -  Backup                       (Different backups depending on the user)"
 
     echo -e
     echo -e " Key            Standalone               Description"
@@ -38,8 +60,7 @@ archangelmenu()
     echo -e " [A]  -  Install Arch Linux           (Install Arch Linux with a quick and simple script!)"
 
     echo -e ""
-    read -n1 -p "- Please select an option from the list: " menuinput
-    echo -e
+    read -p "- Please select an option from the list: " menuinput
     echo -e
     optionsList
 }
@@ -52,7 +73,7 @@ case $menuinput in
     3) install_cybersec;;
     4) install_scientific;;
     5) install_de;;
-    5) backup:system;;
+    6) backup_system;;
     a|A) install_arch;;
     x|X|q|Q) echo -e "- See you next time!";;
     *) clear && setup
@@ -79,14 +100,14 @@ install_angelpilled()
     echo -e "+ Custom Scripts added to /usr/local/bin"
     echo -e
 
-    read -n1 -p "- Proceed to continue? (y/n) " answer; echo -e
+    read -p "- Proceed to continue? (y/n) " answer; echo -e
     case $answer in
 	[yY])
 	    git clone https://github.com/angelpilled/angelpilled-configs.git
 	    echo -e
 	    cd ./angelpilled-configs && ./full-install.sh && cd ..
 
-	    read -n1 -p "- Keep \"angelpilled-configs\" for future tweaking? (y/n) " answer; echo -e
+	    read -p "- Keep \"angelpilled-configs\" for future tweaking? (y/n) " answer; echo -e
 	    case $answer in
 		[yY])
 		    sleepExit
@@ -106,10 +127,11 @@ install_angelpilled()
 
 install_favorites()
 {
-    read -n1 -p "- angelpilled's favorite softwares will be installed now. Do you wish to proceed? (y/n) " answer
+    read -p "- angelpilled's favorite softwares will be installed now. Do you wish to proceed? (y/n) " answer
     echo -e
     case $answer in
 	[Yy])
+	    clear
 	    sudo pacman -S --needed --noconfirm neofetch tmux terminus-font cmus firefox pipewire pipewire-pulse alsa-utils gnome-themes-extra lxappearance cowsay fortune-mod xorg xorg-xinit vlc thunar tumbler ntfs-3g npm luajit maim xbindkeys htop arandr filezilla gimp picom feh python unzip xclip neovim easytag 
 	    ls /usr/bin/yay &> /dev/null
 	    if [ $? -ne 0 ]; then
@@ -127,9 +149,10 @@ install_cybersec()
 {
 
     echo -e "- Install Cybersecurity Tools option selected"
-    read -n1 -p "- Proceed to continue? (y/n) " answer; echo -e
+    read -p "- Proceed to continue? (y/n) " answer; echo -e
     case $answer in
 	[yY])
+	    clear
 	    echo "- Downloading cybersecurity tools from the Official Arch Repository."
 	    sudo pacman -S --needed --noconfirm nmap wireshark-cli metasploit aircrack-ng john hydra sqlmap nikto hashcat
 
@@ -147,9 +170,10 @@ install_cybersec()
 install_scientific()
 {
     echo -e "- The following packages will be installed: GNU Octave, LaTeX binaries, Zathura PDF Viewer, Octave, Geogebra, GNU R, GNU Plot"
-    read -n1 -p "- Do you wish to proceed? (y/n) " answer
+    read -p "- Do you wish to proceed? (y/n) " answer
     case $answer in
 	[yY])
+	    clear
 	    echo -e "\n- Installing packages... "
 	    sudo pacman -S --needed --noconfirm texlive texlive-binextra zathura octave geogebra r gnuplot
 	    if [ ! -d ~/.config/zathura ]; then
@@ -201,14 +225,115 @@ install_de()
 	exit)
 	    echo -e "Exiting to main menu in 3 seconds..." && sleep 3 && setup
 	    ;;
-	*) echo "Invalid option. Exiting in 3 seconds..." && sleep 3 && setup
+	*) echo "Exiting in 3 seconds..." && sleep 3 && setup
+    esac
+}
+
+backup_system()
+{
+    read -p "Backup option was selected. Do you wish to proceed? (y/n): " choice
+    case $choice in
+	[yY])
+	    clear
+	    echo -e "The following backup options exist:"
+
+	    echo -e "1) User directory backup"
+	    echo -e "2) System backup"
+
+	    echo -e
+	    read -p "Select one of the above options with their respective numbers: " backupSelect
+
+	    case $backupSelect in
+		1)
+		    sudo echo -e
+		    userDir=$(promptUser "Current or different user to be backed up? (curr/diff): " "curr diff" )
+
+		    echo -e "\nNow, you will be asked the location to back up to."
+		    echo -e "THE CONTENTS OF THE USER DIRECTORY WILL BE COPIED, NOT THE DIRECTORY ITSELF!\n"
+
+		    read -p "Specify the destination directory to store the backup files to: " destDir
+
+		    while true; do
+			echo -e
+			read -p "USER DIRECTORY will be backed up here: $destDir. Is this right? (y/n): " isRight
+			if [ $isRight == "y" ]; then
+			    echo -e
+			    sudo mkdir -p "$destDir"
+			    break
+			else
+			    echo -e
+			    read -p "Specify the destination directory to store the backup files to: " destDir
+			fi
+		    done
+
+		    if [ "$userDir" == "curr" ]; then
+			echo -e "Copying $USER's home directory to $destDir in 3 seconds..." && sleep 3
+			sudo rsync -azvh --progress /home/$USER/ $destDir
+			echo -e "Home directory backup was successful!"
+
+		    elif [ $userDir == "diff" ]; then
+			read -p "Which user's directory do you want to be backed up?: " userName
+			while true; do
+			    if id "$userName" &>/dev/null; then
+				echo "Copying $userName's directory to $destDir in 3 seconds..." && sleep 3
+				sudo rsync -azvh --progress /home/$userName/ $destDir    
+				echo -e "Directory backup was successful!"
+				break
+			    else 
+				echo -e "User does not exist. Try again."
+				read -p "Which user's directory do you want to be backed up?: " userName
+			    fi
+			done
+		    fi
+		    echo -e "Exiting to main menu in 5 seconds..." && sleep 5 && setup
+		;;
+		2)
+		    echo -e "\n\nThis option will backup the following directories: /home/ /etc/ /usr/local/ /var/log/ "
+
+		    read -p "Are you sure you want to continue? (y/n): " choice
+
+		    case $choice in
+			[yY])
+			    echo -e
+			    echo -e "\nNow, you will be asked the location to back up to. If the directory does not exist, it will be created. Spaces can be included."
+			    echo -e "THE DIRECTORIES ITSELF (and inside, the contents of it) WILL BE COPIED, NOT THE CONTENTS ONLY!\n"
+	    		    read -p "Specify the destination directory to store the backup files to: " destDir
+
+			    while true; do
+				echo -e
+				read -p "SYSTEM DIRECTORIES will be backed up here: $destDir. Is this right? (y/n): " isRight
+				if [ $isRight == "y" ]; then
+				    sudo mkdir -p "$destDir"
+				    break
+				else
+				    echo -e
+				    read -p "Specify the destination directory to store the backup files to: " destDir
+				fi
+			    done
+
+			    echo -e "\nBacking up system files to $destDir in 3 seconds..." & sleep 3
+			    sudo rsync -azvh --progress "/home" "/etc" "/usr/local" "/var/log" "$destDir"
+			    ;;
+			*)
+			    setup
+			    ;;
+			esac
+		    ;;
+		*)
+		    setup
+		    ;;
+	    esac
+	    ;;
+	*)
+	    setup
+	    ;;
     esac
 }
 
 install_arch()
 {
     echo -e "- You've selected Arch Linux installation."
-    read -n1 -p "- Do you wish to proceed? (y/n) " answer
+    read -p "- Do you wish to proceed? (y/n) " answer
     case $answer in
 	[yY])
 	    curl -O https://raw.githubusercontent.com/angelpilled/ArchAngel/master/scripts/archangel-install
