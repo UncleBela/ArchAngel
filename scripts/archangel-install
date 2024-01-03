@@ -7,39 +7,6 @@ partEnd=1
 
 # Beginning of all functions
 
-setup () {
-    echo '  ______                       __               ______                                 __ '
-    echo ' /      \                     /  |             /      \                               /  |'
-    echo '/$$$$$$  |  ______    _______ $$ |____        /$$$$$$  | _______    ______    ______  $$ |'
-    echo '$$ |__$$ | /      \  /       |$$      \       $$ |__$$ |/       \  /      \  /      \ $$ |'
-    echo '$$    $$ |/$$$$$$  |/$$$$$$$/ $$$$$$$  |      $$    $$ |$$$$$$$  |/$$$$$$  |/$$$$$$  |$$ |'
-    echo '$$$$$$$$ |$$ |  $$/ $$ |      $$ |  $$ |      $$$$$$$$ |$$ |  $$ |$$ |  $$ |$$    $$ |$$ |'
-    echo '$$ |  $$ |$$ |      $$ \_____ $$ |  $$ |      $$ |  $$ |$$ |  $$ |$$ \__$$ |$$$$$$$$/ $$ |'
-    echo '$$ |  $$ |$$ |      $$       |$$ |  $$ |      $$ |  $$ |$$ |  $$ |$$    $$ |$$       |$$ |'
-    echo '$$/   $$/ $$/        $$$$$$$/ $$/   $$/       $$/   $$/ $$/   $$/  $$$$$$$ | $$$$$$$/ $$/ '
-    echo '                                                                  /  \__$$ |              '
-    echo '                                                                  $$    $$/               '
-    echo -e '                                                                   $$$$$$/                \n'
-
-    echo ""
-    echo -e "Welcome to angelpilled's Arch Angel archinstall script. This shell script\nwill install Arch Linux easily, hopefully without any roadblocks.\n"
-
-    read -s -n1 -p "Please press a key to continue. "
-    echo -e
-
-    YesOrNo "Do you want your block devices to be listed?" lsblk
-    SelectPartitions
-    formatPartitions
-    mountSystem
-    baseInstall
-    displayAndAudio
-    userCreation
-    languageSelection
-
-    arch-chroot /mnt sh userinstall.sh
-}
-
-
 YesOrNo ()
 {
     read -p "$1 (y/n): " yn 
@@ -69,10 +36,10 @@ SelectPartitions ()
 	    echo "SWAP partition will not be made."
 	fi
     done
-
+  
     while [ 1 ]; do
         echo -e "\nEnter device block numbers."
-
+         
         read -p "Boot partition (e.g /dev/sda1): " bp
         checkPart "$bp"
 
@@ -161,13 +128,21 @@ EOF
 
 baseInstall()
 {
-    read "Press a key to start installation."
-    read "Press another key to start installation."
-    # echo "Populating Arch Linux keyring..."
+    read -p "Press a key to start installation."
+    read -p "Press another key to start installation."
+
+    read -p "Will you be using a (laptop) or (pc)?: " platform
+    platform=${platform,,}
+
+    if [ $platform != "laptop" && $plaform != "pc" ]; then
+	platform="pc"
+    fi
+
+    echo "Populating Arch Linux keyring..."
     pacman-key --populate
     pacman -Sy archlinux-keyring --noconfirm --needed
 
-
+   
     # Kernel and base packages
     echo "Simulating base installation..."
     pacstrap /mnt base base-devel linux linux-firmware --noconfirm --needed
@@ -199,15 +174,18 @@ displayAndAudio()
     cat <<'ENDOFSCRIPT' > /mnt/userinstall.sh
     useradd -m $userName
     usermod -aG wheel,storage,power,audio $userName
-    passwd $password
+    passwd "$userName"
     sed -i 's/^# wheel ALL=(ALL:ALL) ALL/%wheel ALL=(ALL:ALL) ALL/' etc/sudoers
+
     read -p "Please enter keyboard language: " keyLang 
     keyLang=$(echo ${keyLang,,})
     echo ${keyLang}
+
     echo "Setting up language and locale..."
     sed -i 's/^#en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen
     locale-gen
     echo "LANG=en_US.UTF-8" >> /etc/locale.conf
+
     case $keyLang in
 	hungarian)
 	    echo "Hungarian layout set up."
@@ -218,13 +196,17 @@ displayAndAudio()
 	    echo "KEYMAP=hu101" > /etc/vconsole.conf
 	    ;;
     esac
+
     deRET=1
+
     pacman -S pulseaudio --noconfirm --needed
+
     de=("xfce4" "xorg" "dwm")
     while [[ $deRET != 0 ]]; do
 	echo -e "\nAvailable environments: "
 	echo ${de[@]}
 	read -p "Choose a DE, WM or system: " SelectedDE
+
 	echo ${de[@]} | grep $SelectedDE > /dev/null
 	if [ $? == 0 ]; then
 	    deRET=0
@@ -242,18 +224,60 @@ displayAndAudio()
 		    cd Git
 		    git clone https://github.com/angelpilled/angelpilled-configs
 		    cd angelpilled-configs/suckless
-		    ./build.sh
+		    ./build.sh "$platform"
+		    break
+		    ;;
+		*)
+		    mkdir -p Git
+		    cd Git
+		    git clone https://github.com/angelpilled/angelpilled-configs
+		    cd angelpilled-configs/suckless
+		    ./build.sh "$platform"
 		    break
 		    ;;
 	    esac
 	else
 	    echo "Entered package was not found. Please try again."
 	fi
+
     done
+
 echo "Installation was successful. Now you can reboot into your newly created system."
+
 ENDOFSCRIPT
 
 }
 
+setup () {
+    echo '  ______                       __               ______                                 __ '
+    echo ' /      \                     /  |             /      \                               /  |'
+    echo '/$$$$$$  |  ______    _______ $$ |____        /$$$$$$  | _______    ______    ______  $$ |'
+    echo '$$ |__$$ | /      \  /       |$$      \       $$ |__$$ |/       \  /      \  /      \ $$ |'
+    echo '$$    $$ |/$$$$$$  |/$$$$$$$/ $$$$$$$  |      $$    $$ |$$$$$$$  |/$$$$$$  |/$$$$$$  |$$ |'
+    echo '$$$$$$$$ |$$ |  $$/ $$ |      $$ |  $$ |      $$$$$$$$ |$$ |  $$ |$$ |  $$ |$$    $$ |$$ |'
+    echo '$$ |  $$ |$$ |      $$ \_____ $$ |  $$ |      $$ |  $$ |$$ |  $$ |$$ \__$$ |$$$$$$$$/ $$ |'
+    echo '$$ |  $$ |$$ |      $$       |$$ |  $$ |      $$ |  $$ |$$ |  $$ |$$    $$ |$$       |$$ |'
+    echo '$$/   $$/ $$/        $$$$$$$/ $$/   $$/       $$/   $$/ $$/   $$/  $$$$$$$ | $$$$$$$/ $$/ '
+    echo '                                                                  /  \__$$ |              '
+    echo '                                                                  $$    $$/               '
+    echo -e '                                                                   $$$$$$/                \n'
+    
+    echo ""
+    echo -e "Welcome to angelpilled's Arch Angel archinstall script. This shell script\nwill install Arch Linux easily, hopefully without any roadblocks.\n"
+
+    read -s -n1 -p "Please press a key to continue. "
+    echo -e
+
+    YesOrNo "Do you want your block devices to be listed?" lsblk
+    SelectPartitions
+    formatPartitions
+    mountSystem
+    baseInstall
+    displayAndAudio
+    userCreation
+    languageSelection
+
+    arch-chroot /mnt sh userinstall.sh
+}
 
 setup
