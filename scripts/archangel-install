@@ -174,8 +174,8 @@ displayAndAudio()
     cat <<'ENDOFSCRIPT' > /mnt/userinstall.sh
     useradd -m $userName
     usermod -aG wheel,storage,power,audio $userName
-    passwd "$userName"
-    sed -i 's/^# wheel ALL=(ALL:ALL) ALL/%wheel ALL=(ALL:ALL) ALL/' etc/sudoers
+    passwd $userName
+    sed -i 's/^# wheel ALL=(ALL:ALL) ALL/%wheel ALL=(ALL:ALL) ALL/' /etc/sudoers
 
     read -p "Please enter keyboard language: " keyLang 
     keyLang=$(echo ${keyLang,,})
@@ -275,6 +275,7 @@ setup () {
     baseInstall
     displayAndAudio
     userCreation
+    networkConfig
     languageSelection
 
     arch-chroot /mnt sh userinstall.sh
