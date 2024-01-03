@@ -134,7 +134,7 @@ baseInstall()
     read -p "Will you be using a (laptop) or (pc)?: " platform
     platform=${platform,,}
 
-    if [ $platform != "laptop" && $plaform != "pc" ]; then
+    if [ $platform != "laptop" ] && [ $plaform != "pc" ]; then
 	platform="pc"
     fi
 
