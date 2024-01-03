@@ -112,18 +112,7 @@ userCreation()
     echo "Setting up user..."
     read -p "Username: " userName
     read -p "Hostname: " hostName
-    read -s -p "Password: " password
     echo "Created users..."
-}
-
-networkConfig()
-{
-    echo "$hostName" > /etc/hostname
-    cat <<EOF > /etc/hosts
-    127.0.0.1	localhost
-    ::1		localhost
-    127.0.1.1	arch.localdomain	arch
-EOF
 }
 
 baseInstall()
@@ -186,14 +175,24 @@ displayAndAudio()
     locale-gen
     echo "LANG=en_US.UTF-8" >> /etc/locale.conf
 
+    ln -sf /usr/share/zoneinfo/Europe/Budapest /etc/localtime
+    hwclock --systohc
+
+    echo "$hostName" > /etc/hostname
+cat <<EOF > /etc/hosts
+    127.0.0.1	localhost
+    ::1		localhost
+    127.0.1.1	arch.localdomain	arch
+EOF
+
     case $keyLang in
 	hungarian)
 	    echo "Hungarian layout set up."
-	    echo "KEYMAP=hu101" > /etc/vconsole.conf
+	    echo "KEYMAP=hu" > /etc/vconsole.conf
 	    ;;
 	*)
 	    echo "Hungarian layout set up."
-	    echo "KEYMAP=hu101" > /etc/vconsole.conf
+	    echo "KEYMAP=hu" > /etc/vconsole.conf
 	    ;;
     esac
 
@@ -275,7 +274,6 @@ setup () {
     baseInstall
     displayAndAudio
     userCreation
-    networkConfig
     languageSelection
 
     arch-chroot /mnt sh userinstall.sh
