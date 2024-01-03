@@ -150,10 +150,10 @@ baseInstall()
     echo "Bootloader installed..."
 
 cat <<EOF > /mnt/boot/loader/entries/arch.conf
-    title Arch Linux
-    linux /vmlinuz-linux
-    initrd /initramfs-linux.img
-    options root=${rp} rw
+title Arch Linux
+linux /vmlinuz-linux
+initrd /initramfs-linux.img
+options root=${rp} rw
 EOF
 }
 
@@ -161,10 +161,16 @@ displayAndAudio()
 {
 
     cat <<'ENDOFSCRIPT' > /mnt/userinstall.sh
-    useradd -m $userName
+    bash
+
+    read -p "Username: " userName
+    read -p "Hostname: " hostName
+
+    useradd -m $userName && echo -e "Successfully created user."
     usermod -aG wheel,storage,power,audio $userName
     passwd $userName
-    sed -i 's/^# wheel ALL=(ALL:ALL) ALL/%wheel ALL=(ALL:ALL) ALL/' /etc/sudoers
+
+    sed -i 's/^# %wheel ALL=(ALL:ALL) ALL/%wheel ALL=(ALL:ALL) ALL/' /etc/sudoers
 
     read -p "Please enter keyboard language: " keyLang 
     keyLang=$(echo ${keyLang,,})
@@ -180,10 +186,13 @@ displayAndAudio()
 
     echo "$hostName" > /etc/hostname
 cat <<EOF > /etc/hosts
-    127.0.0.1	localhost
-    ::1		localhost
-    127.0.1.1	arch.localdomain	arch
+127.0.0.1	localhost
+::1		localhost
+127.0.1.1	arch.localdomain	arch
 EOF
+
+systemctl start NetworkManager
+echo -e "Enabled NetworkManager on startup via systemctl!"
 
     case $keyLang in
 	hungarian)
@@ -274,7 +283,6 @@ setup () {
     baseInstall
     displayAndAudio
     userCreation
-    languageSelection
 
     arch-chroot /mnt sh userinstall.sh
 }
