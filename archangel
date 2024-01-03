@@ -132,10 +132,16 @@ install_favorites()
     case $answer in
 	[Yy])
 	    clear
-	    sudo pacman -S --needed --noconfirm neofetch tmux terminus-font cmus firefox pipewire pipewire-pulse alsa-utils gnome-themes-extra lxappearance cowsay fortune-mod xorg xorg-xinit vlc thunar tumbler ntfs-3g npm luajit maim xbindkeys htop arandr filezilla gimp picom feh python unzip xclip neovim easytag 
+	    echo "/usr/bin/yay" > /dev/null
+	    if [ $? -ne 0 ]; then
+		cd ~ && git clone https://aur.archlinux.org/yay.git && cd yay && makepkg -si --noconfirm && cd .. && rm -rf yay && cd $ARCHANGEL
+	    fi
+	    echo -e "Removing conflicts..."
+	    sudo pacman -Rdd pulseaudio
+	    sudo pacman -S --needed --noconfirm neofetch tmux terminus-font cmus firefox pipewire pipewire-pulse alsa-utils gnome-themes-extra lxappearance cowsay fortune-mod xorg xorg-xinit vlc thunar tumbler ntfs-3g npm luajit maim xbindkeys htop arandr filezilla gimp picom feh python unzip xclip neovim easytag
 	    ls /usr/bin/yay &> /dev/null
 	    if [ $? -ne 0 ]; then
-		cd ~ && git clone https://aur.archlinux.org/yay.git && cd yay && makepkg -si
+		cd ~ && git clone https://aur.archlinux.org/yay.git && cd yay && makepkg -si && cd .. && rm -rf yay && cd $ARCHANGEL
 	    fi
 	    sleepExit
 	    ;;
