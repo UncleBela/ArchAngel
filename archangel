@@ -47,12 +47,12 @@ archangelmenu()
 {
     echo -e " Key            Menu Option              Description"
     echo -e "-----   ----------------------------  -----------------"
-    echo -e " [1]  -  Angelpilled Package          (Install angelpilled's configurations)"
-    echo -e " [2]  -  Dev's Favorites              (Install angelpilled's favorite softwares)"
-    echo -e " [3]  -  Cybersec Tools               (Install the top 10 most used cybersecurity tools.)"
+    echo -e " [1]  -  Uncle Bela's Packages        (Install Uncle Bela's configurations)"
+    echo -e " [2]  -  Complete System              (Install Uncle Bela's complete package collection)"
+    echo -e " [3]  -  Cybersec Tools               (Install the top most used cybersecurity tools.)"
     echo -e " [4]  -  Scientist's Tools            (Installs the best scientific software)"
     echo -e " [5]  -  Desktop Environments         (Install DEs like KDE, XFCE4, Gnome, etc.)"
-    echo -e " [6]  -  Backup                       (Different backups depending on the user)"
+    echo -e " [6]  -  Backup                       (Different types of backups depending on the user)"
 
     echo -e
     echo -e " Key            Standalone               Description"
@@ -67,17 +67,17 @@ archangelmenu()
 
 optionsList()
 {
-case $menuinput in
-    1) install_angelpilled;;
-    2) install_favorites;;
-    3) install_cybersec;;
-    4) install_scientific;;
-    5) install_de;;
-    6) backup_system;;
-    a|A) install_arch;;
-    x|X|q|Q) echo -e "- See you next time!";;
-    *) clear && setup
-esac
+    case $menuinput in
+	1) install_unclebela;;
+	2) install_favorites;;
+	3) install_cybersec;;
+	4) install_scientific;;
+	5) install_de;;
+	6) backup;;
+	a|A) install_arch;;
+	x|X|q|Q) echo -e "- See you next time!";;
+	*) clear && setup
+    esac
 }
 
 sleepExit()
@@ -86,35 +86,27 @@ sleepExit()
     setup
 }
 
-install_angelpilled()
+install_unclebela()
 {
     echo -e "- This function will install all the config files I use daily.\n"
-    echo -e "- The \"pack\" contains:"
-    echo -e "+ Suckless software packages: dwm, dmenu, st, slock, surf, slstatus"
-    echo -e "+ Bash config file"
-    echo -e "+ Fish shell config file"
-    echo -e "+ Neovim config file"
-    echo -e "+ Picom config file"
-    echo -e "+ Xbindkeys config file"
-    echo -e "+ Xinitrc config files"
-    echo -e "+ Custom Scripts added to /usr/local/bin"
+    echo -e "Custom Scripts added to /usr/local/bin"
     echo -e
 
     read -p "- Proceed to continue? (y/n) " answer; echo -e
     case $answer in
 	[yY])
-	    git clone https://github.com/angelpilled/angelpilled-configs.git
+	    git clone https://github.com/UncleBela/dotfiles.git
 	    echo -e
-	    cd ./angelpilled-configs && ./full-install.sh && cd ..
+	    cd ./dotfiles && ./full-install.sh && cd ..
 
-	    read -p "- Keep \"angelpilled-configs\" for future tweaking? (y/n) " answer; echo -e
+	    read -p "- Keep \"dotfiles\" for future tweaking? (y/n) " answer; echo -e
 	    case $answer in
 		[yY])
 		    sleepExit
 		    setup
 		    ;;
 		*)
-		    rm -rf ./angelpilled-configs
+		    rm -rf ./dotfiles
 		    sleepExit
 		    ;;
 	    esac
@@ -127,22 +119,20 @@ install_angelpilled()
 
 install_favorites()
 {
-    read -p "- angelpilled's favorite softwares will be installed now. Do you wish to proceed? (y/n) " answer
+    read -p "- Uncle Béla's software collection will be installed now. Do you wish to proceed? (y/n) " answer
     echo -e
     case $answer in
 	[Yy])
 	    clear
-	    echo "/usr/bin/yay" > /dev/null
-	    if [ $? -ne 0 ]; then
-		cd ~ && git clone https://aur.archlinux.org/yay.git && cd yay && makepkg -si --noconfirm && cd .. && rm -rf yay && cd $ARCHANGEL
-	    fi
 	    echo -e "Removing conflicts..."
 	    sudo pacman -Rdd pulseaudio
-	    sudo pacman -S --needed --noconfirm neofetch tmux terminus-font cmus firefox pipewire pipewire-pulse alsa-utils gnome-themes-extra lxappearance cowsay fortune-mod xorg xorg-xinit vlc thunar tumbler ntfs-3g npm luajit maim xbindkeys htop arandr filezilla gimp picom feh python unzip xclip neovim easytag deno gvfs
+	    sudo pacman -S --needed --noconfirm fastfetch tmux terminus-font cmus firefox pipewire pipewire-pulse alsa-utils gnome-themes-extra lxappearance cowsay fortune-mod xorg xorg-xinit vlc thunar tumbler ntfs-3g npm luajit maim xbindkeys htop arandr filezilla gimp feh python unzip xclip easytag deno gvfs ranger fish rsync p7zip zip xcompmgr pulsemixer protontricks zathura zathura-djvu zathura-pdf-mupdf rofi rofimoji noto-fonts-emoji noto-fonts-cjk godot blender inkscape audacity virtualbox virtualbox-host-dkms dart-sass typescript wget qbittorrent keepassxc fontforge texlive-binextra xnviewmp ffmpegthumbnailer emacs expac linux-headers semgrep mate mate-extra acpi
 	    ls /usr/bin/yay &> /dev/null
 	    if [ $? -ne 0 ]; then
 		cd ~ && git clone https://aur.archlinux.org/yay.git && cd yay && makepkg -si --noconfirm && cd .. && rm -rf yay && cd $ARCHANGEL
 	    fi
+	    yay -S noto-fonts adwaita-qt5-git juliaup-bin
+	    node install -g live-server vscode-langservers-extracted typescript-language-server bash-language-server
 	    sleepExit
 	    ;;
 	*)
@@ -153,7 +143,6 @@ install_favorites()
 
 install_cybersec()
 {
-
     echo -e "- Install Cybersecurity Tools option selected"
     read -p "- Proceed to continue? (y/n) " answer; echo -e
     case $answer in
@@ -197,10 +186,6 @@ install_scientific()
 install_de()
 {
     echo -e "- Select the available Desktop Environments to install:"
-    echo -e "+ gnome"
-    echo -e "+ kde"
-    echo -e "+ xfce"
-    echo -e "+ cinnamon"
     echo -e "+ mate"
     echo -e
     echo -e "(+ exit)"
@@ -208,22 +193,6 @@ install_de()
     choice=${choice,,}
 
     case $choice in
-	gnome)
-	    sudo pacman -S --needed --noconfirm gnome
-	    sleepExit 
-	    ;; 
-	kde)
-	    sudo pacman -S --needed --noconfirm plasma kde-applications
-	    sleepExit 
-	    ;; 
-	xfce)
-	    sudo pacman -S --needed --noconfirm xfce4
-	    sleepExit 
-	    ;; 
-	cinnamon)
-	    sudo pacman -S --needed --noconfirm cinnamon
-	    sleepExit 
-	    ;; 
 	mate)
 	    sudo pacman -S --needed --noconfirm mate
 	    sleepExit 
@@ -235,100 +204,33 @@ install_de()
     esac
 }
 
-backup_system()
+backup()
 {
-    read -p "Backup option was selected. Do you wish to proceed? (y/n): " choice
-    case $choice in
-	[yY])
-	    clear
-	    echo -e "The following backup options exist:"
+    clear
+    echo -e "Backup option was selected."
+    echo -e "The following backup options exist:"
 
-	    echo -e "1) User directory backup"
-	    echo -e "2) System backup"
+    echo -e "1) User Directory Backup"
+    echo -e "2) System Backup"
+    echo -e "3) User Files backup"
+    echo -e "(exit)"
 
-	    echo -e
-	    read -p "Select one of the above options with their respective numbers: " backupSelect
+    echo -e
+    read -p "Select one of the above options with their respective numbers: " backupSelect
 
-	    case $backupSelect in
-		1)
-		    sudo echo -e
-		    userDir=$(promptUser "Current or different user to be backed up? (curr/diff): " "curr diff" )
-
-		    echo -e "\nNow, you will be asked the location to back up to."
-		    echo -e "THE CONTENTS OF THE USER DIRECTORY WILL BE COPIED, NOT THE DIRECTORY ITSELF!\n"
-
-		    read -p "Specify the destination directory to store the backup files to: " destDir
-
-		    while true; do
-			echo -e
-			read -p "USER DIRECTORY will be backed up here: $destDir. Is this right? (y/n): " isRight
-			if [ $isRight == "y" ]; then
-			    echo -e
-			    sudo mkdir -p "$destDir"
-			    break
-			else
-			    echo -e
-			    read -p "Specify the destination directory to store the backup files to: " destDir
-			fi
-		    done
-
-		    if [ "$userDir" == "curr" ]; then
-			echo -e "Copying $USER's home directory to $destDir in 3 seconds..." && sleep 3
-			sudo rsync -azvh --progress /home/$USER/ $destDir
-			echo -e "Home directory backup was successful!"
-
-		    elif [ $userDir == "diff" ]; then
-			read -p "Which user's directory do you want to be backed up?: " userName
-			while true; do
-			    if id "$userName" &>/dev/null; then
-				echo "Copying $userName's directory to $destDir in 3 seconds..." && sleep 3
-				sudo rsync -azvh --progress /home/$userName/ $destDir    
-				echo -e "Directory backup was successful!"
-				break
-			    else 
-				echo -e "User does not exist. Try again."
-				read -p "Which user's directory do you want to be backed up?: " userName
-			    fi
-			done
-		    fi
-		    echo -e "Exiting to main menu in 5 seconds..." && sleep 5 && setup
-		;;
-		2)
-		    echo -e "\n\nThis option will backup the following directories: /home/ /etc/ /usr/local/ /var/log/ "
-
-		    read -p "Are you sure you want to continue? (y/n): " choice
-
-		    case $choice in
-			[yY])
-			    echo -e
-			    echo -e "\nNow, you will be asked the location to back up to. If the directory does not exist, it will be created. Spaces can be included."
-			    echo -e "THE DIRECTORIES ITSELF (and inside, the contents of it) WILL BE COPIED, NOT THE CONTENTS ONLY!\n"
-	    		    read -p "Specify the destination directory to store the backup files to: " destDir
-
-			    while true; do
-				echo -e
-				read -p "SYSTEM DIRECTORIES will be backed up here: $destDir. Is this right? (y/n): " isRight
-				if [ $isRight == "y" ]; then
-				    sudo mkdir -p "$destDir"
-				    break
-				else
-				    echo -e
-				    read -p "Specify the destination directory to store the backup files to: " destDir
-				fi
-			    done
-
-			    echo -e "\nBacking up system files to $destDir in 3 seconds..." & sleep 3
-			    sudo rsync -azvh --progress "/home" "/etc" "/usr/local" "/var/log" "$destDir"
-			    ;;
-			*)
-			    setup
-			    ;;
-			esac
-		    ;;
-		*)
-		    setup
-		    ;;
-	    esac
+    case $backupSelect in
+	1)
+	    user_backup
+	    ;;
+	2)
+	    system_backup
+	    ;;
+	3)
+	    echo -e "Good job my G."
+	    ;;
+	[exit])
+	    echo -e "Exiting";
+	    setup
 	    ;;
 	*)
 	    setup
@@ -336,13 +238,91 @@ backup_system()
     esac
 }
 
+# Backup scripts
+
+user_backup()
+{
+    sudo echo -e
+    userDir=$(promptUser "Current or different user to be backed up? (curr/diff): " "curr diff" )
+
+    echo -e "\nNow, you will be asked the location to back up to."
+    echo -e "THE CONTENTS OF THE USER DIRECTORY WILL BE COPIED, NOT THE DIRECTORY ITSELF!\n"
+
+    read -p "Specify the destination directory to store the backup files to: " destDir
+
+    while true; do
+	echo -e
+	read -p "USER DIRECTORY will be backed up here: $destDir. Is this right? (y/n): " isRight
+	if [ $isRight == "y" ]; then
+	    echo -e
+	    sudo mkdir -p "$destDir"
+	    break
+	else
+	    echo -e
+	    read -p "Specify the destination directory to store the backup files to: " destDir
+	fi
+    done
+
+    if [ "$userDir" == "curr" ]; then
+	echo -e "Copying $USER's home directory to $destDir in 3 seconds..." && sleep 3
+	sudo rsync -azvh --progress /home/$USER/ $destDir
+	echo -e "Home directory backup was successful!"
+
+    elif [ $userDir == "diff" ]; then
+	read -p "Which user's directory do you want to be backed up?: " userName
+	while true; do
+	    if id "$userName" &>/dev/null; then
+		echo "Copying $userName's directory to $destDir in 3 seconds..." && sleep 3
+		sudo rsync -azvh --progress /home/$userName/ $destDir    
+		echo -e "Directory backup was successful!"
+		break
+	    else 
+		echo -e "User does not exist. Try again."
+		read -p "Which user's directory do you want to be backed up?: " userName
+	    fi
+	done
+    fi
+    echo -e "Exiting to main menu in 5 seconds..." && sleep 5 && setup
+}
+
+system_backup()
+{
+    clear
+    echo -e "Backup option selected.\nThis option will backup the following directories: /home/ /etc/ /usr/local/ /var/log/ "
+    echo -e "\nNow, you will be asked the location to back up to. If the directory does not exist, it will be created. Spaces can be included."
+    echo -e "THE DIRECTORIES ITSELF (and inside, the contents of it) WILL BE COPIED, NOT THE CONTENTS ONLY!\n"
+    read -p "Specify the destination directory to store the backup files to, or (exit): " destDir
+
+    if [ $destDir == "exit" ];
+    then
+	echo -e "Exiting..."
+fi
+
+    while true; do
+	echo -e
+	read -p "SYSTEM DIRECTORIES will be backed up here: $destDir. Is this right? (y/n): " isRight
+	if [ $isRight == "y" ]; then
+	    sudo mkdir -p "$destDir"
+	    break
+	else
+	    echo -e
+	    read -p "Specify the destination directory to store the backup files to: " destDir
+	fi
+    done
+
+    echo -e "\nBacking up system files to $destDir in 3 seconds..." & sleep 3
+    sudo rsync -azvh --progress "/home" "/etc" "/usr/local" "/var/log" "$destDir"
+}
+
+# Install Arch Script
+
 install_arch()
 {
     echo -e "- You've selected Arch Linux installation."
     read -p "- Do you wish to proceed? (y/n) " answer
     case $answer in
 	[yY])
-	    curl -O https://raw.githubusercontent.com/angelpilled/ArchAngel/master/scripts/archangel-install
+	    curl -O https://raw.githubusercontent.com/UncleBela/ArchAngel/master/scripts/archangel-install
 	    chmod +x ./archangel-install
 	    clear
 	    ./archangel-install
