@@ -47,12 +47,18 @@ archangelmenu()
 {
     echo -e " Key            Menu Option              Description"
     echo -e "-----   ----------------------------  -----------------"
-    echo -e " [1]  -  Uncle Bela's Packages        (Install Uncle Bela's configurations)"
-    echo -e " [2]  -  Complete System              (Install Uncle Bela's complete package collection)"
-    echo -e " [3]  -  Cybersec Tools               (Install the top most used cybersecurity tools.)"
-    echo -e " [4]  -  Scientist's Tools            (Installs the best scientific software)"
-    echo -e " [5]  -  Desktop Environments         (Install DEs like KDE, XFCE4, Gnome, etc.)"
-    echo -e " [6]  -  Backup                       (Different types of backups depending on the user)"
+    echo -e " [1]  -  Post Installation            (Uncle Béla's post install Script)"
+    echo -e " [2]  -  Config Files                 (Uncle Béla's config files)"
+    echo -e " [3]  -  Configure Mirrors            (Different types of backups depending on the user)"
+    echo -e " [4]  -  Configure Emacs              (Uncle Béla's Emacs configuration)"
+    echo -e " [5]  -  System Cleanup               (System cleanup)"
+    echo -e " [6]  -  Backup                       (Several types of backups)"
+
+    echo -e
+
+    echo -e " Key            Optional               Description"
+    echo -e "-----   ----------------------------  -----------------"
+    echo -e " [C]  -  Cybersec Tools              (Install Cybersecurity tools)"
 
     echo -e
     echo -e " Key            Standalone               Description"
@@ -68,13 +74,12 @@ archangelmenu()
 optionsList()
 {
     case $menuinput in
-	1) install_unclebela;;
-	2) install_favorites;;
-	3) install_cybersec;;
-	4) install_scientific;;
-	5) install_de;;
-	6) backup;;
-	a|A) install_arch;;
+	1) read -n 1 -s -r -p "You've selected post installation. Press any key to continue. "; post_install;;
+	2) read -n 1 -s -r -p "You've selected emacs configuration. Press any key to continue. "; configure-emacs;;
+	3) read -n 1 -s -r -p "You've selected mirror configuration. Press any key to continue. "; configure-mirrors;;
+	4) read -n 1 -s -r -p "You've selected to backup your files. Press any key to continue. "; backup;;
+	5) read -n 1 -s -r -p "You've selected cybersec tools installation. Press any key to continue. "; cybersec;;
+	a|A) read -n 1 -s -r -p "You've selected Arch Linux installation. Press any key to continue. "; install_arch;;
 	x|X|q|Q) echo -e "- See you next time!";;
 	*) clear && setup
     esac
@@ -88,60 +93,94 @@ sleepExit()
 
 install_unclebela()
 {
-    echo -e "- This function will install all the config files I use daily.\n"
-    echo -e "Custom Scripts added to /usr/local/bin"
-    echo -e
+    git clone https://github.com/UncleBela/dotfiles.git ~/.uncle_bela/dotfiles
+    cd ./dotfiles && ./install.sh && cd ..
 
-    read -p "- Proceed to continue? (y/n) " answer; echo -e
+    read -p "- Keep \"dotfiles\" for future tweaking? (y/n) " answer; echo -e
     case $answer in
 	[yY])
-	    git clone https://github.com/UncleBela/dotfiles.git
-	    echo -e
-	    cd ./dotfiles && ./full-install.sh && cd ..
-
-	    read -p "- Keep \"dotfiles\" for future tweaking? (y/n) " answer; echo -e
-	    case $answer in
-		[yY])
-		    sleepExit
-		    setup
-		    ;;
-		*)
-		    rm -rf ./dotfiles
-		    sleepExit
-		    ;;
-	    esac
-	    ;;
-	*)
+	    sleepExit
 	    setup
 	    ;;
-    esac
-}
-
-install_favorites()
-{
-    read -p "- Uncle Béla's software collection will be installed now. Do you wish to proceed? (y/n) " answer
-    echo -e
-    case $answer in
-	[Yy])
-	    clear
-	    echo -e "Removing conflicts..."
-	    sudo pacman -Rdd pulseaudio
-	    sudo pacman -S --needed --noconfirm fastfetch tmux terminus-font cmus firefox pipewire pipewire-pulse alsa-utils gnome-themes-extra lxappearance cowsay fortune-mod xorg xorg-xinit vlc thunar tumbler ntfs-3g npm luajit maim xbindkeys htop arandr filezilla gimp feh python unzip xclip easytag deno gvfs ranger fish rsync p7zip zip xcompmgr pulsemixer protontricks zathura zathura-djvu zathura-pdf-mupdf rofi rofimoji noto-fonts-emoji noto-fonts-cjk godot blender inkscape audacity virtualbox virtualbox-host-dkms dart-sass typescript wget qbittorrent keepassxc fontforge texlive-binextra xnviewmp ffmpegthumbnailer emacs expac linux-headers semgrep mate mate-extra acpi
-	    ls /usr/bin/yay &> /dev/null
-	    if [ $? -ne 0 ]; then
-		cd ~ && git clone https://aur.archlinux.org/yay.git && cd yay && makepkg -si --noconfirm && cd .. && rm -rf yay && cd $ARCHANGEL
-	    fi
-	    yay -S noto-fonts adwaita-qt5-git juliaup-bin
-	    node install -g live-server vscode-langservers-extracted typescript-language-server bash-language-server
+	*)
+	    rm -rf ./dotfiles
 	    sleepExit
 	    ;;
-	*)
-	    setup
-	    ;;
     esac
+    ;;
 }
 
-install_cybersec()
+post_install()
+{
+
+    echo -e "------------------------"
+    echo -e "------------------------"
+    echo -e "|  Post Installation   |"
+    echo -e "------------------------"
+    echo -e "------------------------"
+
+
+    echo -e "------------------------"
+    echo -e "------------------------"
+    echo -e "|  Full System Upgrade  |"
+    echo -e "------------------------"
+    echo -e "------------------------"
+
+    sudo pacman -Syy
+    yes | sudo pacman -Syu
+
+    echo -e "------------------------"
+    echo -e "------------------------"
+    echo -e "|     Beautifying      |"
+    echo -e "------------------------"
+    echo -e "------------------------"
+
+    mkdir -p ~/.uncle_bela/backup
+    sudo cp /etc/pacman.conf ~/.uncle_bela/backup/
+    sudo sed -i "s/#Color/Color\nILoveCandy/g" /etc/pacman.conf
+    sudo pacman -Syy
+
+    echo -e "------------------------"
+    echo -e "------------------------"
+    echo -e "|   YAY Installation   |"
+    echo -e "------------------------"
+    echo -e "------------------------"
+
+    ls /usr/bin/yay &> /dev/null
+    if [ $? -ne 0 ]; then
+	cd ~ && git clone https://aur.archlinux.org/yay.git && cd yay && makepkg -si --noconfirm && cd .. && rm -rf yay && cd $ARCHANGEL
+    fi
+
+    echo -e "------------------------"
+    echo -e "------------------------"
+    echo -e "|   Software Install   |"
+    echo -e "------------------------"
+    echo -e "------------------------"
+    
+    echo -e "Removing conflicts..."
+    sudo pacman -Rdd pulseaudio
+    sudo pacman -S --needed --noconfirm fastfetch tmux terminus-font cmus firefox pipewire pipewire-pulse alsa-utils gnome-themes-extra lxappearance cowsay fortune-mod xorg xorg-xinit vlc thunar tumbler ntfs-3g npm luajit maim xbindkeys htop arandr filezilla gimp feh python unzip xclip easytag deno gvfs ranger fish rsync p7zip zip xcompmgr pulsemixer protontricks zathura zathura-djvu zathura-pdf-mupdf rofi rofimoji noto-fonts-emoji noto-fonts-cjk godot blender inkscape audacity virtualbox virtualbox-host-dkms dart-sass typescript wget qbittorrent keepassxc fontforge texlive-binextra xnviewmp ffmpegthumbnailer emacs expac linux-headers semgrep mate mate-extra acpi
+    yay -S noto-fonts adwaita-qt5-git juliaup-bin
+    node install -g live-server vscode-langservers-extracted typescript-language-server bash-language-server
+
+    echo -e "------------------------"
+    echo -e "------------------------"
+    echo -e "|     Config Files     |"
+    echo -e "------------------------"
+    echo -e "------------------------"
+
+    install_unclebela;;
+
+    echo -e "------------------------"
+    echo -e "------------------------"
+    echo -e "|       Exiting...      |"
+    echo -e "------------------------"
+    echo -e "------------------------"
+
+    sleepExit
+}
+
+cybersec()
 {
     echo -e "- Install Cybersecurity Tools option selected"
     read -p "- Proceed to continue? (y/n) " answer; echo -e
