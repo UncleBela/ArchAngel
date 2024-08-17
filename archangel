@@ -93,8 +93,9 @@ sleepExit()
 
 install_unclebela()
 {
+    rm -rf ~/.uncle_bela/dotfiles
     git clone https://github.com/UncleBela/dotfiles.git ~/.uncle_bela/dotfiles
-    cd ./dotfiles && ./install.sh && cd ..
+    cd ~/.uncle_bela/dotfiles && ./install.sh && cd ..
 
     read -p "- Keep \"dotfiles\" for future tweaking? (y/n) " answer; echo -e
     case $answer in
@@ -107,7 +108,6 @@ install_unclebela()
 	    sleepExit
 	    ;;
     esac
-    ;;
 }
 
 post_install()
@@ -128,7 +128,7 @@ post_install()
 
     sudo pacman -Syy
     yes | sudo pacman -Syu
-
+    
     echo -e "------------------------"
     echo -e "------------------------"
     echo -e "|     Beautifying      |"
@@ -139,6 +139,28 @@ post_install()
     sudo cp /etc/pacman.conf ~/.uncle_bela/backup/
     sudo sed -i "s/#Color/Color\nILoveCandy/g" /etc/pacman.conf
     sudo pacman -Syy
+    
+    cat /etc/os-release | grep "Artix" >> /dev/null
+
+    if [ $? == 0 ]; then
+    
+    echo -e "------------------------"
+    echo -e "------------------------"
+    echo -e "|     Artix Repos      |"
+    echo -e "------------------------"
+    echo -e "------------------------"
+    
+        sudo pacman -S --needed --noconfirm artix-archlinux-support
+	sudo pacman -Syy
+	
+	grep '# Arch' /etc/pacman.conf >> /dev/null
+	
+	if [ $? -ne 0 ]; then
+		sudo sed -i '99i \\n# Arch \n\n[extra]\nInclude = /etc/pacman.d/mirrorlist-arch\n\n[multilib]\nInclude = /etc/pacman.d/mirrorlist-arch' /etc/pacman.conf
+	fi
+	
+        sudo pacman-key --populate archlinux
+    fi
 
     echo -e "------------------------"
     echo -e "------------------------"
@@ -146,8 +168,14 @@ post_install()
     echo -e "------------------------"
     echo -e "------------------------"
 
+    sudo pacman -S --noconfirm --needed git
+    git config --global init.defaultBranch master
+    
+    sudo pacman -S --needed --noconfirm base-devel
+
     ls /usr/bin/yay &> /dev/null
     if [ $? -ne 0 ]; then
+    	rm -rf ~/yay
 	cd ~ && git clone https://aur.archlinux.org/yay.git && cd yay && makepkg -si --noconfirm && cd .. && rm -rf yay && cd $ARCHANGEL
     fi
 
@@ -157,10 +185,10 @@ post_install()
     echo -e "------------------------"
     echo -e "------------------------"
     
-    echo -e "Removing conflicts..."
-    sudo pacman -Rdd pulseaudio
-    sudo pacman -S --needed --noconfirm fastfetch tmux terminus-font cmus firefox pipewire pipewire-pulse alsa-utils gnome-themes-extra lxappearance cowsay fortune-mod xorg xorg-xinit vlc thunar tumbler ntfs-3g npm luajit maim xbindkeys htop arandr filezilla gimp feh python unzip xclip easytag deno gvfs ranger fish rsync p7zip zip xcompmgr pulsemixer protontricks zathura zathura-djvu zathura-pdf-mupdf rofi rofimoji noto-fonts-emoji noto-fonts-cjk godot blender inkscape audacity virtualbox virtualbox-host-dkms dart-sass typescript wget qbittorrent keepassxc fontforge texlive-binextra xnviewmp ffmpegthumbnailer emacs expac linux-headers semgrep mate mate-extra acpi
-    yay -S noto-fonts adwaita-qt5-git juliaup-bin
+    echo -e "Removing potential conflicts..."
+    sudo pacman -Rdd --noconfirm pulseaudio
+    sudo pacman -S --needed --noconfirm --ignore --ignoregroup fastfetch tmux terminus-font cmus firefox pipewire pipewire-pulse alsa-utils gnome-themes-extra lxappearance cowsay fortune-mod xorg xorg-xinit vlc thunar tumbler ntfs-3g npm luajit maim xbindkeys htop arandr filezilla gimp feh python unzip xclip easytag deno gvfs ranger fish rsync p7zip zip xcompmgr pulsemixer zathura zathura-djvu zathura-pdf-mupdf rofi rofimoji noto-fonts-emoji noto-fonts-cjk godot blender inkscape audacity virtualbox virtualbox-host-dkms dart-sass typescript wget qbittorrent keepassxc fontforge texlive-binextra xnviewmp ffmpegthumbnailer emacs expac linux-headers mate mate-extra acpi nodejs
+    yay -S --needed --noconfirm noto-fonts adwaita-qt5-git juliaup-bin
     node install -g live-server vscode-langservers-extracted typescript-language-server bash-language-server
 
     echo -e "------------------------"
@@ -169,7 +197,7 @@ post_install()
     echo -e "------------------------"
     echo -e "------------------------"
 
-    install_unclebela;;
+    install_unclebela
 
     echo -e "------------------------"
     echo -e "------------------------"
