@@ -159,7 +159,8 @@ post_install()
 		sudo sed -i '99i \\n# Arch \n\n[extra]\nInclude = /etc/pacman.d/mirrorlist-arch\n\n[multilib]\nInclude = /etc/pacman.d/mirrorlist-arch' /etc/pacman.conf
 	fi
 	
-        sudo pacman-key --populate archlinux
+    sudo pacman-key --populate archlinux
+    sudo pacman -Syy
     fi
 
     echo -e "------------------------"
@@ -186,10 +187,20 @@ post_install()
     echo -e "------------------------"
     
     echo -e "Removing potential conflicts..."
-    sudo pacman -Rdd --noconfirm pulseaudio
-    sudo pacman -S --needed --noconfirm --ignore --ignoregroup fastfetch tmux terminus-font cmus firefox pipewire pipewire-pulse alsa-utils gnome-themes-extra lxappearance cowsay fortune-mod xorg xorg-xinit vlc thunar tumbler ntfs-3g npm luajit maim xbindkeys htop arandr filezilla gimp feh python unzip xclip easytag deno gvfs ranger fish rsync p7zip zip xcompmgr pulsemixer zathura zathura-djvu zathura-pdf-mupdf rofi rofimoji noto-fonts-emoji noto-fonts-cjk godot blender inkscape audacity virtualbox virtualbox-host-dkms dart-sass typescript wget qbittorrent keepassxc fontforge texlive-binextra xnviewmp ffmpegthumbnailer emacs expac linux-headers mate mate-extra acpi nodejs
-    yay -S --needed --noconfirm noto-fonts adwaita-qt5-git juliaup-bin
-    node install -g live-server vscode-langservers-extracted typescript-language-server bash-language-server
+    sudo pacman -S --needed --noconfirm --ignore --ignoregroup fastfetch tmux terminus-font cmus firefox pipewire pipewire-pulse alsa-utils gnome-themes-extra lxappearance cowsay fortune-mod xorg xorg-xinit vlc thunar tumbler ntfs-3g npm luajit maim xbindkeys htop arandr filezilla gimp feh python unzip xclip easytag deno gvfs ranger fish rsync p7zip zip xcompmgr pulsemixer zathura zathura-djvu zathura-pdf-mupdf rofi rofimoji noto-fonts-emoji noto-fonts-cjk godot blender inkscape audacity virtualbox virtualbox-host-dkms dart-sass typescript wget qbittorrent keepassxc fontforge texlive-binextra ffmpegthumbnailer emacs expac linux-headers mate mate-extra acpi nodejs obsidian qt5ct bat btop fzf tldr libxcrypt-compat inetutils net-tools flameshot pandoc easyeffects xlockmore kcalc ttf-dejavu python python-pip python-virtualenv duf
+
+    echo -e "qt5ct as default"
+
+    sudo cat > /etc/environment <<EOF
+QT_QPA_PLATFORMTHEME=qt5ct
+QTWEBENGINE_CHROMIUM_FLAGS="-blink-settings=darkModeEnabled=true -enable-features=OverlayScrollbar,OverlayScrollbarFlashAfterAnyScrollUpdate,OverlayScrollbarFlashWhenMouseEnter"
+EOF
+    
+    echo -e "VLC fix..."
+    sudo pacman -Rdd --noconfirm pulseaudio libva-vdpau-driver
+
+    yay -S --needed --noconfirm noto-fonts adwaita-qt5-git juliaup-bin xampp gtk-engine-murrine
+    sudo npm install -g live-server bash-language-server typescript typescript-language-server vscode-langservers-extracted
 
     echo -e "------------------------"
     echo -e "------------------------"
@@ -199,6 +210,10 @@ post_install()
 
     install_unclebela
 
+    echo -e "Setting date and time..."
+    sudo ntpd -qg
+    sudo hwclock -w
+    
     echo -e "------------------------"
     echo -e "------------------------"
     echo -e "|       Exiting...      |"
